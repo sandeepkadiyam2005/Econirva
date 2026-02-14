@@ -1,15 +1,30 @@
-# ECONIRVA Bio Solutions - ERP Backend Foundation
+# ECONIRVA Global Industrial SaaS Backend
 
-Production-ready backend foundation for internal ERP workflows using **Node.js + Express + PostgreSQL + Prisma**.
+ECONIRVA is now structured as a **multi-tenant, globally scalable, AI-enabled industrial SaaS platform** for:
+- Manufacturing companies
+- Wholesale distributors
+- Retail chains
+- Export businesses
+- Multi-country operations
 
-## Tech Stack
-- Node.js + Express
-- PostgreSQL with Prisma ORM
-- JWT authentication + role-based authorization
-- Multer file upload for logos/artwork
-- Security middleware: Helmet, CORS, rate limiting
+This backend provides the foundation for Phases 29–38.
+
+## Core Architecture Delivered
+
+- **Multi-tenant isolation** using `Tenant` + tenant-scoped relations.
+- **Subdomain/header tenant resolution** (`company.econirva.com` or `x-tenant-id`).
+- **Subscription plans**: Basic / Pro / Enterprise.
+- **Feature-based access control** with tenant feature flags.
+- **Usage tracking + billing invoice records**.
+- **Globalization base**: i18n locales, multi-currency, tax and region pricing engine.
+- **Traceability base** for material origin + digital certification hash.
+- **ESG and investor dashboards** data layer.
+- **AI forecast endpoint** for demand/reorder/churn foundation.
+- **Enterprise security middleware** (JWT + tenant checks + role checks + audit logs).
+- **Event-driven foundation** with publish/subscribe abstraction (in-memory now; Kafka/RabbitMQ-ready).
 
 ## Project Structure
+
 ```text
 server/
  ├── config/
@@ -27,47 +42,88 @@ server/
  └── .env.example
 ```
 
-## Installation
-1. Install dependencies:
+## Quick Start
+
+1. Install dependencies
    ```bash
    npm install
    ```
-2. Copy environment file:
+2. Copy env file
    ```bash
    cp server/.env.example .env
    ```
-3. Update `.env` values for PostgreSQL and secrets.
+3. Configure PostgreSQL and secrets in `.env`.
 
-## Prisma Migrations
-Use the schema located at `server/models/prisma/schema.prisma`.
+## Prisma
 
-1. Generate Prisma client:
-   ```bash
-   npm run prisma:generate
-   ```
-2. Create and apply migration:
-   ```bash
-   npm run prisma:migrate
-   ```
+Schema path:
+- `server/models/prisma/schema.prisma`
 
-## Run Server
+Run:
+```bash
+npm run prisma:generate
+npm run prisma:migrate
+```
+
+## Run API
+
 ```bash
 npm run server
 ```
-The API runs by default at `http://localhost:5001`.
 
-## API Testing (Quick Start)
-Use Postman/Insomnia or curl:
+Health:
+- `GET /health`
+
+## Key Endpoints
+
+### Auth
 - `POST /auth/signup`
 - `POST /auth/login`
-- `GET /products`
-- `POST /products` (JWT + role required)
-- `POST /orders` (multipart/form-data, optional `logo` file)
-- `GET /customers`
 
-## Security Included
-- Helmet for secure HTTP headers
-- CORS configured using `FRONTEND_URL`
-- Global rate limiter
-- Password hashing with bcrypt (12 rounds)
-- JWT tokens with expiry (`8h`)
+### Core ERP
+- `GET /products`
+- `GET /products/:id`
+- `POST /products`
+- `PUT /products/:id`
+- `DELETE /products/:id`
+
+- `POST /orders`
+- `GET /orders`
+- `GET /orders/:id`
+- `PUT /orders/:id/status`
+
+- `GET /customers`
+- `GET /customers/:id`
+
+### Platform SaaS
+- `GET /platform/plans`
+- `POST /platform/tenants`
+- `GET /platform/tenant/context`
+- `GET /platform/localization/options`
+- `POST /platform/tax/estimate`
+- `GET /platform/billing/invoices`
+- `POST /platform/billing/invoices`
+- `POST /platform/traceability/material-batches`
+- `POST /platform/traceability/certificates`
+- `GET /platform/esg/dashboard`
+- `GET /platform/investor/dashboard`
+- `POST /platform/ai/forecast`
+
+## Security Enhancements
+
+- Helmet
+- CORS
+- Rate limiting
+- bcrypt hashing (12 rounds)
+- JWT expiry (`8h`)
+- Tenant-aware token validation
+- Audit log structure (SOC2-oriented)
+- OIDC/SSO env placeholders for Google/Microsoft
+
+## Deployment Direction (next implementation phases)
+
+- External message broker (Kafka/RabbitMQ)
+- Kubernetes manifests + autoscaling
+- Multi-region deployment strategy + DR playbooks
+- White-label custom domains and theme engine
+- Dedicated AI model services and MLOps pipeline

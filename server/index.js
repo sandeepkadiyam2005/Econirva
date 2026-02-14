@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url';
 import routes from './routes/index.js';
 import { connectDatabase } from './config/database.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { resolveTenant } from './middleware/tenant.js';
+import { subscribeEvent } from './services/eventService.js';
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -20,10 +22,31 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use(helmet());
+const publicTenantlessPaths = new Set(['/health', '/platform/plans', '/platform/tenants']);
+
+subscribeEvent('order.created', (event) => {
+  if (process.env.NODE_ENV !== 'test') {
+    console.log('[event]', event.eventName, event.payload);
+  }
+});
+
+subscribeEvent('order.status.updated', (event) => {
+  if (process.env.NODE_ENV !== 'test') {
+    console.log('[event]', event.eventName, event.payload);
+  }
+});
+
+app.disable('x-powered-by');
+app.set('trust proxy', 1);
+
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: process.env.FRONTEND_URL?.split(',').map((x) => x.trim()) || '*',
     credentials: true,
   })
 );
@@ -33,7 +56,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/health', (_req, res) => {
-  res.status(200).json({ success: true, service: 'ECONIRVA ERP API' });
+  res.status(200).json({ success: true, service: 'ECONIRVA Global Industrial SaaS API' });
+});
+
+app.use((req, res, next) => {
+  if (publicTenantlessPaths.has(req.path)) return next();
+  return resolveTenant(req, res, next);
 });
 
 app.use('/', routes);
