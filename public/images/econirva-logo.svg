@@ -1,0 +1,19 @@
+<svg width="220" height="220" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#41B36B"/>
+      <stop offset="100%" stop-color="#0D7A52"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#9CE3B7"/>
+      <stop offset="100%" stop-color="#13895C"/>
+    </linearGradient>
+  </defs>
+  <circle cx="110" cy="110" r="100" fill="#F2FFF8" stroke="url(#ring)" stroke-width="8"/>
+  <path d="M58 140C58 103 77 74 112 74C130 74 147 81 160 94" stroke="#1E9B67" stroke-width="16" stroke-linecap="round"/>
+  <path d="M92 148V86" stroke="#147F56" stroke-width="16" stroke-linecap="round"/>
+  <path d="M128 148V98C128 89 136 82 145 82C154 82 162 89 162 98V148" stroke="#147F56" stroke-width="16" stroke-linecap="round"/>
+  <path d="M102 43C109 28 126 22 142 29C132 44 115 51 102 43Z" fill="url(#leaf)"/>
+  <path d="M77 59C65 45 67 26 81 15C93 29 92 48 77 59Z" fill="url(#leaf)"/>
+  <text x="110" y="186" text-anchor="middle" fill="#0D6A46" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700">Econirva</text>
+</svg>

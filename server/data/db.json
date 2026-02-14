@@ -1,0 +1,110 @@
+{
+  "users": [
+    {
+      "id": "u-admin-1",
+      "name": "Admin User",
+      "email": "admin@econirva.com",
+      "role": "admin",
+      "passwordHash": "1b7e65bebe9945b78893b1a04a6eee4720098a6f70e466e6e7e374f2d57585d849c32c0e61a007fa342d1cbd4d0965e7754a4fee30a0f2bad0cc027bc9ed152f",
+      "passwordSalt": "41fc4ed1cdaca98f17c1fc75fd657ccf"
+    },
+    {
+      "id": "u-sales-1",
+      "name": "Sales User",
+      "email": "sales@econirva.com",
+      "role": "sales",
+      "passwordHash": "e4c0706f5051a69a3b59330b923bfba8217e76c32f244b2fbff4fab28926b311ea766db68784daedb19eb635657ba733fe39fdd913a8eb68423cce025738a8c9",
+      "passwordSalt": "96ba47ef3f33dfda8a1a2e127adbcb41"
+    },
+    {
+      "id": "u-viewer-1",
+      "name": "Viewer User",
+      "email": "viewer@econirva.com",
+      "role": "viewer",
+      "passwordHash": "bfd98882c9528880518a2e9e5f1df11ec6271c3183d407b06a294f973441d41f6a4c635a822f39e6eab59a08ce98491982816f2c50fb67080e2a860c0b3b8ce5",
+      "passwordSalt": "9e8636e96e60843571e76e01d703a0a3"
+    },
+    {
+      "id": "u-financer-1",
+      "name": "Finance User",
+      "email": "financer@econirva.com",
+      "role": "financer",
+      "passwordHash": "076d418180fb261cc3fd4f7900b2b50678c8a2c844652bcbd4af085098d74eef76152969bf5c385fa88b13e1511c4e19e44f60273b6d075cadb7bd07cbd1c6df",
+      "passwordSalt": "b6f6f1b95b8f5b286d8115cbda4c0d55"
+    },
+    {
+      "id": "u-user-1",
+      "name": "Customer User",
+      "email": "user@econirva.com",
+      "role": "user",
+      "passwordHash": "37630521b22bb10fd4e586bbac873cc18aa906fab7e4efa0ee3d0b604b8cca2f3a5ae9bf4827f2425d5c4a52dcdc7155a27bf9a9300b1101cc42c8ff20375410",
+      "passwordSalt": "a5830773cae7a9b25dcceff424756927"
+    }
+  ],
+  "products": [
+    {
+      "id": "p-1",
+      "title": "Shopping & Carry Bags",
+      "category": "Retail",
+      "description": "Premium compostable carry bags for branded stores and daily retail checkout.",
+      "image": "/products/shopping-bags.svg",
+      "pricePerUnit": 8.5,
+      "moq": 5000,
+      "leadTime": "8-12 days",
+      "material": "Corn-starch PLA",
+      "customization": [
+        "Single-color logo",
+        "Multi-color print",
+        "Private label"
+      ],
+      "availability": "in_stock",
+      "stockQty": 120000,
+      "pricingTiers": [
+        {
+          "minQty": 5000,
+          "pricePerUnit": 8.5
+        },
+        {
+          "minQty": 20000,
+          "pricePerUnit": 7.8
+        }
+      ]
+    },
+    {
+      "id": "p-2",
+      "title": "Grocery & Supermarket Bags",
+      "category": "Supermarket",
+      "description": "Food-safe, high-strength grocery bags for supermarkets and provision chains.",
+      "image": "/products/grocery-bags.svg",
+      "pricePerUnit": 6.25,
+      "moq": 10000,
+      "leadTime": "7-10 days",
+      "material": "Bio-based polymer blend",
+      "customization": [
+        "Store branding",
+        "Offer print",
+        "Barcode-ready panel"
+      ],
+      "availability": "made_to_order",
+      "stockQty": 0,
+      "pricingTiers": [
+        {
+          "minQty": 10000,
+          "pricePerUnit": 6.25
+        },
+        {
+          "minQty": 50000,
+          "pricePerUnit": 5.7
+        }
+      ]
+    }
+  ],
+  "orders": [],
+  "quotes": [],
+  "media": [],
+  "notifications": [],
+  "financeRecords": [],
+  "paymentOptions": [],
+  "salesConcerns": [],
+  "financeIssues": []
+}

@@ -1,0 +1,2130 @@
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000000000000000000000000000000000000..6478fcf8b775f50a0a649d324c2d6174e21038eb
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1 @@
++server/data/*.sqlite
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..02ebd9d462c24a0c1d900ad61f6bcc3624b1934f
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,154 @@
++# econirva
++
++## Econirva Web + Admin API
++
++Frontend runs with Vite (React).
++
++## Frontend
++- `npm run dev`
++- Open `/` for website
++- Open `/admin` for admin panel
++
++## Codespaces/Cloud URL troubleshooting (important)
++- **Frontend UI is on port `5173`**:
++  - open the forwarded URL for `5173` to see Home page
++  - open `.../admin` on the same `5173` URL for admin login
++- **Port `5001` is API only**:
++  - opening `5001` root shows API status JSON
++  - use API paths like `/api/health`, `/api/products`
++- If you open `5001` expecting website, you will not see the React UI.
++
++## Run everything at once
++- Start frontend + backend together:
++  - `npm run run:all`
++- Then open:
++  - Website: `http://localhost:5173`
++  - Admin: `http://localhost:5173/admin`
++
++## Check everything is working (single command)
++- Run API smoke checks automatically:
++  - `npm run check:all`
++- This command will:
++  - start backend server temporarily
++  - test admin login
++  - test admin products endpoint
++  - print pass/fail output
++
++## Backend API
++Run:
++- `npm run server`
++
++Base URL: `http://localhost:5001`
++
++### Default Accounts
++- Admin: `admin@econirva.com` / `admin123`
++- Sales: `sales@econirva.com` / `sales123`
++- Viewer: `viewer@econirva.com` / `viewer123`
++- Financer: `financer@econirva.com` / `financer123`
++- User: `user@econirva.com` / `user123`
++
++## How to access Admin Dashboard
++1. Start backend API: `npm run server`.
++2. Start frontend: `npm run dev`.
++3. Open `http://localhost:5173/admin`.
++4. Login with a **company account**:
++   - `admin@econirva.com` / `admin123`
++   - `sales@econirva.com` / `sales123`
++   - `viewer@econirva.com` / `viewer123`
++
++### Important
++- Customer (`user` role) can login for customer flows, but **cannot** open admin dashboard.
++- Admin APIs are role-protected and return `403 Forbidden` for non-company roles.
++
++
++## Database
++- Backend now uses **SQLite** database at `server/data/econirva.sqlite`.
++- All user types (`admin`, `sales`, `viewer`, `financer`, `user`) and workflow data are persisted in DB state.
++- Existing `server/data/db.json` is used only as initial seed for first run.
++
++## New workflow features added
++- Password change endpoint for all logged-in users: `POST /api/auth/change-password`.
++- Admin password reset for team accounts: `POST /api/admin/users/:id/reset-password` (admin only).
++- Web notifications feed for new orders, payment updates, sales concerns, and finance issues.
++- Delivery OTP workflow:
++  - Generate OTP: `POST /api/admin/orders/:id/start-delivery`
++  - Confirm delivered with OTP: `POST /api/orders/:id/confirm-delivery-otp`
++- Finance page APIs (admin/financer only):
++  - `GET/POST /api/finance/records`
++  - `GET/POST /api/admin/payment-options`
++- Team concern reporting:
++  - Sales concern: `GET/POST /api/admin/sales-concerns`
++  - Finance issue: `GET/POST /api/admin/finance-issues`
++
++## Features implemented for real workflow
++- JWT session auth (HS256 token) with secure password hashing (PBKDF2).
++- Role-based access (`admin`, `sales`, `viewer`, `user`).
++- `/admin` panel for admin/sales/viewer login.
++- Product Management CRUD with fields:
++  - title/name, category, material, MOQ, lead time, price, image URL,
++  - customization options,
++  - status/availability,
++  - stock qty,
++  - dynamic pricing tiers.
++- Availability statuses:
++  - `in_stock`
++  - `made_to_order`
++  - `temp_unavailable`
++- Cloud media URL pipeline:
++  - save S3/Cloudinary URL to DB and optionally bind to product image.
++- Order + Quote inbox in DB with admin dashboard visibility.
++- Customer order payment modes: `cod` (cash on delivery) and `advance` (partial advance + balance due).
++- Order lifecycle: `new -> approved -> production -> shipped -> delivered`.
++- CSV export for inbox records.
++- Public website automatically reflects product availability via API.
++
++## Main Endpoints
++- `POST /api/auth/login`
++- `POST /api/auth/register`
++- `GET /api/products`
++
++### Admin/Auth
++- `GET /api/admin/me`
++- `GET /api/admin/stats` (admin/sales/viewer, includes payment board stats)
++- `POST /api/admin/users` (admin only, create admin/sales/viewer)
++
++### Products
++- `GET /api/admin/products` (admin/sales/viewer)
++- `POST /api/admin/products` (admin/sales)
++- `PUT /api/admin/products/:id` (admin/sales)
++- `DELETE /api/admin/products/:id` (admin)
++- `PATCH /api/admin/products/:id/availability` (admin/sales)
++
++### Media Upload/Cloud links
++- `POST /api/admin/media/cloud-link` (admin/sales)
++  - payload: `{ cloudUrl, productId?, type? }`
++
++### Orders/Quotes
++- `POST /api/orders`
++  - accepts: `paymentMethod` (`cod`/`advance`), `advancePercent`, `orderValue`, `advanceAmount`
++- `POST /api/quotes`
++- `GET /api/orders/my`
++- `GET /api/admin/inbox` (admin/sales/viewer)
++- `PATCH /api/admin/inbox/order/:id` (admin/sales)
++- `PATCH /api/admin/inbox/quote/:id` (admin/sales)
++- `GET /api/admin/inbox/export.csv` (admin/sales/viewer)
++
++## What more you can add next
++- Daily/weekly sales chart widgets by product category.
++- Purchase-order approval queue before production start.
++- Notification center (email/WhatsApp) for status transitions.
++- Bulk import/export for products via CSV.
++- Audit log for every admin change (who changed what/when).
++
++## Rename repository from `my-1st-project` to `econirva`
++1. In GitHub, open the repository and go to **Settings → General**.
++2. Under **Repository name**, change `my-1st-project` to `econirva` and save.
++3. Update your local git remote URL:
++
++```bash
++git remote -v
++git remote set-url origin https://github.com/<your-username>/econirva.git
++git remote -v
++```
++
++4. If Vercel/Netlify/GitHub Actions are connected, re-check the project/repo link.
+diff --git a/index.html b/index.html
+new file mode 100644
+index 0000000000000000000000000000000000000000..66d76f652084b95ff1ef64a76ffe478ceefe3476
+--- /dev/null
++++ b/index.html
+@@ -0,0 +1,12 @@
++<!doctype html>
++<html lang="en">
++  <head>
++    <meta charset="UTF-8" />
++    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
++    <title>Econirva</title>
++  </head>
++  <body>
++    <div id="root"></div>
++    <script type="module" src="/src/main.jsx"></script>
++  </body>
++</html>
+diff --git a/package.json b/package.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..c0f753633204ae5a5f5574aff7949830d1ad4775
+--- /dev/null
++++ b/package.json
+@@ -0,0 +1,25 @@
++{
++  "name": "econirva-compostable-bags-website",
++  "private": true,
++  "version": "0.1.0",
++  "type": "module",
++  "scripts": {
++    "dev": "vite",
++    "build": "vite build",
++    "preview": "vite preview",
++    "server": "node server/index.js",
++    "run:all": "node tools/run-all.mjs",
++    "check:all": "node tools/check-all.mjs"
++  },
++  "dependencies": {
++    "react": "^18.2.0",
++    "react-dom": "^18.2.0"
++  },
++  "devDependencies": {
++    "@vitejs/plugin-react": "^4.2.1",
++    "autoprefixer": "^10.4.17",
++    "postcss": "^8.4.33",
++    "tailwindcss": "^3.4.1",
++    "vite": "^5.0.12"
++  }
++}
+diff --git a/postcss.config.js b/postcss.config.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..ba80730477d1dd22b1484282d594f2e5dda4785a
+--- /dev/null
++++ b/postcss.config.js
+@@ -0,0 +1,6 @@
++export default {
++  plugins: {
++    tailwindcss: {},
++    autoprefixer: {}
++  }
++};
+diff --git a/public/images/econirva-logo.svg b/public/images/econirva-logo.svg
+new file mode 100644
+index 0000000000000000000000000000000000000000..67d533ca72124ad9ced2e1de6f0fff43682724db
+--- /dev/null
++++ b/public/images/econirva-logo.svg
+@@ -0,0 +1,19 @@
++<svg width="220" height="220" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
++  <defs>
++    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
++      <stop offset="0%" stop-color="#41B36B"/>
++      <stop offset="100%" stop-color="#0D7A52"/>
++    </linearGradient>
++    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
++      <stop offset="0%" stop-color="#9CE3B7"/>
++      <stop offset="100%" stop-color="#13895C"/>
++    </linearGradient>
++  </defs>
++  <circle cx="110" cy="110" r="100" fill="#F2FFF8" stroke="url(#ring)" stroke-width="8"/>
++  <path d="M58 140C58 103 77 74 112 74C130 74 147 81 160 94" stroke="#1E9B67" stroke-width="16" stroke-linecap="round"/>
++  <path d="M92 148V86" stroke="#147F56" stroke-width="16" stroke-linecap="round"/>
++  <path d="M128 148V98C128 89 136 82 145 82C154 82 162 89 162 98V148" stroke="#147F56" stroke-width="16" stroke-linecap="round"/>
++  <path d="M102 43C109 28 126 22 142 29C132 44 115 51 102 43Z" fill="url(#leaf)"/>
++  <path d="M77 59C65 45 67 26 81 15C93 29 92 48 77 59Z" fill="url(#leaf)"/>
++  <text x="110" y="186" text-anchor="middle" fill="#0D6A46" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700">Econirva</text>
++</svg>
+diff --git a/public/products/grocery-bags.svg b/public/products/grocery-bags.svg
+new file mode 100644
+index 0000000000000000000000000000000000000000..4f9757d1e6c469ee2c68ac8c828dd06670a80115
+--- /dev/null
++++ b/public/products/grocery-bags.svg
+@@ -0,0 +1,5 @@
++<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400" fill="none">
++  <rect width="600" height="400" fill="#eef7f2"/>
++  <rect x="180" y="70" width="240" height="260" rx="22" fill="#c9e9d7" stroke="#0f9f6b" stroke-width="8"/>
++  <text x="300" y="210" text-anchor="middle" fill="#1b2b4d" font-size="28" font-family="Arial">Econirva</text>
++</svg>
+diff --git a/public/products/roll-on-bags.svg b/public/products/roll-on-bags.svg
+new file mode 100644
+index 0000000000000000000000000000000000000000..4f9757d1e6c469ee2c68ac8c828dd06670a80115
+--- /dev/null
++++ b/public/products/roll-on-bags.svg
+@@ -0,0 +1,5 @@
++<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400" fill="none">
++  <rect width="600" height="400" fill="#eef7f2"/>
++  <rect x="180" y="70" width="240" height="260" rx="22" fill="#c9e9d7" stroke="#0f9f6b" stroke-width="8"/>
++  <text x="300" y="210" text-anchor="middle" fill="#1b2b4d" font-size="28" font-family="Arial">Econirva</text>
++</svg>
+diff --git a/public/products/shopping-bags.svg b/public/products/shopping-bags.svg
+new file mode 100644
+index 0000000000000000000000000000000000000000..4f9757d1e6c469ee2c68ac8c828dd06670a80115
+--- /dev/null
++++ b/public/products/shopping-bags.svg
+@@ -0,0 +1,5 @@
++<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400" fill="none">
++  <rect width="600" height="400" fill="#eef7f2"/>
++  <rect x="180" y="70" width="240" height="260" rx="22" fill="#c9e9d7" stroke="#0f9f6b" stroke-width="8"/>
++  <text x="300" y="210" text-anchor="middle" fill="#1b2b4d" font-size="28" font-family="Arial">Econirva</text>
++</svg>
+diff --git a/server/data/db.json b/server/data/db.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..a85c0552acf1e31d13fc81a651698b9f963f0eb2
+--- /dev/null
++++ b/server/data/db.json
+@@ -0,0 +1,110 @@
++{
++  "users": [
++    {
++      "id": "u-admin-1",
++      "name": "Admin User",
++      "email": "admin@econirva.com",
++      "role": "admin",
++      "passwordHash": "1b7e65bebe9945b78893b1a04a6eee4720098a6f70e466e6e7e374f2d57585d849c32c0e61a007fa342d1cbd4d0965e7754a4fee30a0f2bad0cc027bc9ed152f",
++      "passwordSalt": "41fc4ed1cdaca98f17c1fc75fd657ccf"
++    },
++    {
++      "id": "u-sales-1",
++      "name": "Sales User",
++      "email": "sales@econirva.com",
++      "role": "sales",
++      "passwordHash": "e4c0706f5051a69a3b59330b923bfba8217e76c32f244b2fbff4fab28926b311ea766db68784daedb19eb635657ba733fe39fdd913a8eb68423cce025738a8c9",
++      "passwordSalt": "96ba47ef3f33dfda8a1a2e127adbcb41"
++    },
++    {
++      "id": "u-viewer-1",
++      "name": "Viewer User",
++      "email": "viewer@econirva.com",
++      "role": "viewer",
++      "passwordHash": "bfd98882c9528880518a2e9e5f1df11ec6271c3183d407b06a294f973441d41f6a4c635a822f39e6eab59a08ce98491982816f2c50fb67080e2a860c0b3b8ce5",
++      "passwordSalt": "9e8636e96e60843571e76e01d703a0a3"
++    },
++    {
++      "id": "u-financer-1",
++      "name": "Finance User",
++      "email": "financer@econirva.com",
++      "role": "financer",
++      "passwordHash": "076d418180fb261cc3fd4f7900b2b50678c8a2c844652bcbd4af085098d74eef76152969bf5c385fa88b13e1511c4e19e44f60273b6d075cadb7bd07cbd1c6df",
++      "passwordSalt": "b6f6f1b95b8f5b286d8115cbda4c0d55"
++    },
++    {
++      "id": "u-user-1",
++      "name": "Customer User",
++      "email": "user@econirva.com",
++      "role": "user",
++      "passwordHash": "37630521b22bb10fd4e586bbac873cc18aa906fab7e4efa0ee3d0b604b8cca2f3a5ae9bf4827f2425d5c4a52dcdc7155a27bf9a9300b1101cc42c8ff20375410",
++      "passwordSalt": "a5830773cae7a9b25dcceff424756927"
++    }
++  ],
++  "products": [
++    {
++      "id": "p-1",
++      "title": "Shopping & Carry Bags",
++      "category": "Retail",
++      "description": "Premium compostable carry bags for branded stores and daily retail checkout.",
++      "image": "/products/shopping-bags.svg",
++      "pricePerUnit": 8.5,
++      "moq": 5000,
++      "leadTime": "8-12 days",
++      "material": "Corn-starch PLA",
++      "customization": [
++        "Single-color logo",
++        "Multi-color print",
++        "Private label"
++      ],
++      "availability": "in_stock",
++      "stockQty": 120000,
++      "pricingTiers": [
++        {
++          "minQty": 5000,
++          "pricePerUnit": 8.5
++        },
++        {
++          "minQty": 20000,
++          "pricePerUnit": 7.8
++        }
++      ]
++    },
++    {
++      "id": "p-2",
++      "title": "Grocery & Supermarket Bags",
++      "category": "Supermarket",
++      "description": "Food-safe, high-strength grocery bags for supermarkets and provision chains.",
++      "image": "/products/grocery-bags.svg",
++      "pricePerUnit": 6.25,
++      "moq": 10000,
++      "leadTime": "7-10 days",
++      "material": "Bio-based polymer blend",
++      "customization": [
++        "Store branding",
++        "Offer print",
++        "Barcode-ready panel"
++      ],
++      "availability": "made_to_order",
++      "stockQty": 0,
++      "pricingTiers": [
++        {
++          "minQty": 10000,
++          "pricePerUnit": 6.25
++        },
++        {
++          "minQty": 50000,
++          "pricePerUnit": 5.7
++        }
++      ]
++    }
++  ],
++  "orders": [],
++  "quotes": [],
++  "media": [],
++  "notifications": [],
++  "financeRecords": [],
++  "paymentOptions": [],
++  "salesConcerns": [],
++  "financeIssues": []
++}
+\ No newline at end of file
+diff --git a/server/index.js b/server/index.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..230654f8513af95d057bc9493337e8fde2204411
+--- /dev/null
++++ b/server/index.js
+@@ -0,0 +1,746 @@
++import http from "node:http";
++import fs from "node:fs";
++import path from "node:path";
++import crypto from "node:crypto";
++import { fileURLToPath } from "node:url";
++import { DatabaseSync } from "node:sqlite";
++
++const __filename = fileURLToPath(import.meta.url);
++const __dirname = path.dirname(__filename);
++const jsonSeedPath = path.join(__dirname, "data", "db.json");
++const sqlitePath = path.join(__dirname, "data", "econirva.sqlite");
++
++const JWT_SECRET = process.env.JWT_SECRET || "econirva-dev-secret";
++const TOKEN_TTL_SECONDS = 60 * 60 * 8;
++const ORDER_FLOW = ["new", "approved", "production", "shipped", "delivered"];
++const COMPANY_ROLES = ["admin", "sales", "viewer", "financer"];
++
++const dbConn = new DatabaseSync(sqlitePath);
++dbConn.exec(`
++  CREATE TABLE IF NOT EXISTS app_state (
++    key TEXT PRIMARY KEY,
++    value TEXT NOT NULL,
++    updated_at TEXT NOT NULL
++  )
++`);
++
++const defaultState = {
++  users: [],
++  products: [],
++  orders: [],
++  quotes: [],
++  media: [],
++  notifications: [],
++  financeRecords: [],
++  paymentOptions: [],
++  salesConcerns: [],
++  financeIssues: []
++};
++
++const loadSeedState = () => {
++  if (fs.existsSync(jsonSeedPath)) {
++    try {
++      return JSON.parse(fs.readFileSync(jsonSeedPath, "utf8"));
++    } catch {
++      return { ...defaultState };
++    }
++  }
++  return { ...defaultState };
++};
++
++const ensureDbState = () => {
++  const existing = dbConn.prepare("SELECT value FROM app_state WHERE key = ?").get("main");
++  if (!existing) {
++    const seed = loadSeedState();
++    dbConn.prepare("INSERT INTO app_state (key, value, updated_at) VALUES (?, ?, ?)").run("main", JSON.stringify(seed), new Date().toISOString());
++  }
++};
++
++const readDb = () => {
++  ensureDbState();
++  const row = dbConn.prepare("SELECT value FROM app_state WHERE key = ?").get("main");
++  return row?.value ? JSON.parse(row.value) : { ...defaultState };
++};
++
++const writeDb = (db) => {
++  ensureDbState();
++  dbConn.prepare("UPDATE app_state SET value = ?, updated_at = ? WHERE key = ?").run(JSON.stringify(db), new Date().toISOString(), "main");
++};
++
++const b64url = (value) => Buffer.from(value).toString("base64url");
++const fromB64urlJson = (value) => JSON.parse(Buffer.from(value, "base64url").toString("utf8"));
++const nowIso = () => new Date().toISOString();
++
++const hashPassword = (password, salt = crypto.randomBytes(16).toString("hex")) => {
++  const hash = crypto.pbkdf2Sync(password, salt, 120000, 64, "sha512").toString("hex");
++  return { hash, salt };
++};
++
++const verifyPassword = (password, passwordHash, passwordSalt) => {
++  const { hash } = hashPassword(password, passwordSalt);
++  return crypto.timingSafeEqual(Buffer.from(hash, "hex"), Buffer.from(passwordHash, "hex"));
++};
++
++const signJwt = (payload) => {
++  const header = b64url(JSON.stringify({ alg: "HS256", typ: "JWT" }));
++  const body = b64url(JSON.stringify(payload));
++  const data = `${header}.${body}`;
++  const signature = crypto.createHmac("sha256", JWT_SECRET).update(data).digest("base64url");
++  return `${data}.${signature}`;
++};
++
++const verifyJwt = (token) => {
++  const [header, payload, signature] = token.split(".");
++  if (!header || !payload || !signature) return null;
++  const data = `${header}.${payload}`;
++  const expected = crypto.createHmac("sha256", JWT_SECRET).update(data).digest("base64url");
++  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) return null;
++  const decoded = fromB64urlJson(payload);
++  if (decoded.exp && Date.now() > decoded.exp * 1000) return null;
++  return decoded;
++};
++
++const bootstrapDb = () => {
++  const db = readDb();
++  let changed = false;
++
++  db.users = (db.users || []).map((user) => {
++    if (!user.passwordHash || !user.passwordSalt) {
++      const raw = user.password || "changeme123";
++      const { hash, salt } = hashPassword(raw);
++      changed = true;
++      return { ...user, passwordHash: hash, passwordSalt: salt, password: undefined };
++    }
++    return user;
++  });
++
++  if (!db.orders) { db.orders = []; changed = true; }
++  if (!db.quotes) { db.quotes = []; changed = true; }
++  if (!db.media) { db.media = []; changed = true; }
++  if (!db.notifications) { db.notifications = []; changed = true; }
++  if (!db.financeRecords) { db.financeRecords = []; changed = true; }
++  if (!db.paymentOptions) { db.paymentOptions = []; changed = true; }
++  if (!db.salesConcerns) { db.salesConcerns = []; changed = true; }
++  if (!db.financeIssues) { db.financeIssues = []; changed = true; }
++
++  if (changed) writeDb(db);
++};
++
++const send = (res, code, payload, type = "application/json") => {
++  res.writeHead(code, {
++    "Content-Type": type,
++    "Access-Control-Allow-Origin": "*",
++    "Access-Control-Allow-Headers": "Content-Type, Authorization",
++    "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS"
++  });
++  res.end(type === "application/json" ? JSON.stringify(payload) : payload);
++};
++
++const parseBody = async (req) => {
++  const chunks = [];
++  for await (const chunk of req) chunks.push(chunk);
++  const raw = Buffer.concat(chunks).toString("utf8");
++  return raw ? JSON.parse(raw) : {};
++};
++
++const getAuthUser = (req, db) => {
++  const authHeader = req.headers.authorization || "";
++  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
++  if (!token) return null;
++  const decoded = verifyJwt(token);
++  if (!decoded?.sub) return null;
++  return db.users.find((u) => u.id === decoded.sub) || null;
++};
++
++const requireRole = (roles, user) => user && roles.includes(user.role);
++const toSafeUser = (u) => ({ id: u.id, name: u.name, email: u.email, role: u.role });
++const id = (prefix) => `${prefix}-${Date.now()}-${crypto.randomBytes(2).toString("hex")}`;
++const parseUrl = (url) => new URL(url, "http://localhost:5001");
++
++const pushNotification = (db, { title, message, type = "general", audience = "company", orderId = null, createdBy = null }) => {
++  db.notifications.unshift({
++    id: id("n"),
++    title,
++    message,
++    type,
++    audience,
++    orderId,
++    createdBy,
++    readBy: [],
++    createdAt: nowIso()
++  });
++};
++
++const toCsv = (rows) => {
++  const header = [
++    "type", "id", "status", "customerName", "email", "productTitle", "qty", "customization", "requiredDays", "leadTime", "deliveryAddress", "city", "state", "pincode", "phone", "paymentStatus", "orderValue", "paymentMethod", "createdAt"
++  ];
++  const lines = [header.join(",")];
++  for (const row of rows) {
++    lines.push(
++      [
++        row.type,
++        row.id,
++        row.status || "",
++        row.customerName || "",
++        row.email || "",
++        row.productTitle || "",
++        row.qty ?? "",
++        row.customization || row.customizationNotes || "",
++        row.requiredDays ?? "",
++        row.leadTime || "",
++        row.deliveryAddress || "",
++        row.city || "",
++        row.state || "",
++        row.pincode || "",
++        row.phone || "",
++        row.paymentStatus || "",
++        row.orderValue ?? "",
++        row.paymentMethod || "",
++        row.createdAt || ""
++      ]
++        .map((v) => `"${String(v).replaceAll('"', '""')}"`)
++        .join(",")
++    );
++  }
++  return `${lines.join("\n")}\n`;
++};
++
++bootstrapDb();
++
++const server = http.createServer(async (req, res) => {
++  if (req.method === "OPTIONS") return send(res, 204, {});
++
++  const db = readDb();
++  const pathname = parseUrl(req.url).pathname;
++  const user = getAuthUser(req, db);
++
++  if (pathname === "/" && req.method === "GET") {
++    return send(res, 200, {
++      service: "Econirva API",
++      message: "API server is running. Use frontend URL (port 5173) for website/admin UI.",
++      endpoints: ["/api/health", "/api/products", "/api/auth/login"]
++    });
++  }
++
++  if (pathname === "/api/health" && req.method === "GET") {
++    return send(res, 200, { ok: true, service: "api", time: nowIso() });
++  }
++
++  if (pathname === "/api/auth/login" && req.method === "POST") {
++    const body = await parseBody(req);
++    const found = db.users.find((u) => u.email?.toLowerCase() === String(body.email || "").toLowerCase());
++    if (!found || !verifyPassword(String(body.password || ""), found.passwordHash, found.passwordSalt)) {
++      return send(res, 401, { message: "Invalid credentials" });
++    }
++    const token = signJwt({ sub: found.id, role: found.role, exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS });
++    return send(res, 200, { token, user: toSafeUser(found) });
++  }
++
++  if (pathname === "/api/auth/register" && req.method === "POST") {
++    const body = await parseBody(req);
++    if (!body.email || !body.password || !body.name) return send(res, 400, { message: "name, email, password are required" });
++    if (db.users.some((u) => u.email.toLowerCase() === body.email.toLowerCase())) return send(res, 409, { message: "Email exists" });
++    const { hash, salt } = hashPassword(body.password);
++    const created = { id: id("u"), name: body.name, email: body.email, role: "user", passwordHash: hash, passwordSalt: salt };
++    db.users.push(created);
++    writeDb(db);
++    const token = signJwt({ sub: created.id, role: created.role, exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS });
++    return send(res, 201, { token, user: toSafeUser(created) });
++  }
++
++  if (pathname === "/api/auth/change-password" && req.method === "POST") {
++    if (!user) return send(res, 401, { message: "Unauthorized" });
++    const body = await parseBody(req);
++    if (!verifyPassword(String(body.currentPassword || ""), user.passwordHash, user.passwordSalt)) {
++      return send(res, 400, { message: "Current password is incorrect" });
++    }
++    if (!body.newPassword || String(body.newPassword).length < 6) {
++      return send(res, 400, { message: "newPassword must be at least 6 chars" });
++    }
++    const { hash, salt } = hashPassword(String(body.newPassword));
++    user.passwordHash = hash;
++    user.passwordSalt = salt;
++    writeDb(db);
++    return send(res, 200, { message: "Password updated" });
++  }
++
++  const resetPasswordMatch = pathname.match(/^\/api\/admin\/users\/([^/]+)\/reset-password$/);
++  if (resetPasswordMatch && req.method === "POST") {
++    if (!requireRole(["admin"], user)) return send(res, 403, { message: "Forbidden" });
++    const target = db.users.find((u) => u.id === resetPasswordMatch[1]);
++    if (!target) return send(res, 404, { message: "User not found" });
++    const body = await parseBody(req);
++    if (!body.newPassword || String(body.newPassword).length < 6) {
++      return send(res, 400, { message: "newPassword must be at least 6 chars" });
++    }
++    const { hash, salt } = hashPassword(String(body.newPassword));
++    target.passwordHash = hash;
++    target.passwordSalt = salt;
++    writeDb(db);
++    return send(res, 200, { message: `Password reset for ${target.email}` });
++  }
++
++  if (pathname === "/api/products" && req.method === "GET") return send(res, 200, db.products || []);
++
++  if (pathname === "/api/admin/me" && req.method === "GET") {
++    if (!user) return send(res, 401, { message: "Unauthorized" });
++    return send(res, 200, toSafeUser(user));
++  }
++
++  if (pathname === "/api/admin/stats" && req.method === "GET") {
++    if (!requireRole(COMPANY_ROLES, user)) return send(res, 403, { message: "Forbidden" });
++    const usersByRole = db.users.reduce((acc, u) => ({ ...acc, [u.role]: (acc[u.role] || 0) + 1 }), {});
++    const ordersByStatus = db.orders.reduce((acc, o) => ({ ...acc, [o.status]: (acc[o.status] || 0) + 1 }), {});
++    const quotesByStatus = db.quotes.reduce((acc, q) => ({ ...acc, [q.status]: (acc[q.status] || 0) + 1 }), {});
++    const paymentBoard = db.orders.reduce(
++      (acc, o) => {
++        acc.byMethod[o.paymentMethod] = (acc.byMethod[o.paymentMethod] || 0) + 1;
++        acc.advanceCollected += Number(o.advanceAmount || 0);
++        acc.pendingCollection += Number(o.balanceDue || 0);
++        return acc;
++      },
++      { byMethod: { cod: 0, advance: 0 }, advanceCollected: 0, pendingCollection: 0 }
++    );
++
++    const orderBoard = {
++      newlyArrived: db.orders.filter((o) => o.status === "new").length,
++      pending: db.orders.filter((o) => o.status !== "delivered" || o.paymentStatus !== "paid").length,
++      completed: db.orders.filter((o) => o.status === "delivered" && o.paymentStatus === "paid").length
++    };
++
++    return send(res, 200, {
++      totals: {
++        users: db.users.length,
++        products: db.products.length,
++        orders: db.orders.length,
++        quotes: db.quotes.length,
++        orderedUnits: db.orders.reduce((sum, o) => sum + Number(o.qty || 0), 0)
++      },
++      usersByRole,
++      ordersByStatus,
++      quotesByStatus,
++      orderBoard,
++      inventory: {
++        lowStockProducts: db.products.filter((p) => Number(p.stockQty || 0) < Number(p.moq || 0)).length,
++        tempUnavailableProducts: db.products.filter((p) => p.availability === "temp_unavailable").length
++      },
++      payments: paymentBoard,
++      openSalesConcerns: db.salesConcerns.filter((c) => c.status !== "closed").length,
++      openFinanceIssues: db.financeIssues.filter((c) => c.status !== "resolved").length,
++      unreadNotifications: db.notifications.filter((n) => !n.readBy?.includes(user.id)).length
++    });
++  }
++
++  if (pathname === "/api/admin/users" && req.method === "POST") {
++    if (!requireRole(["admin"], user)) return send(res, 403, { message: "Forbidden" });
++    const body = await parseBody(req);
++    if (!["admin", "sales", "viewer", "financer"].includes(body.role)) return send(res, 400, { message: "Invalid role" });
++    const { hash, salt } = hashPassword(String(body.password || "changeme123"));
++    const created = { id: id("u"), name: body.name || body.email, email: body.email, role: body.role, passwordHash: hash, passwordSalt: salt };
++    db.users.push(created);
++    writeDb(db);
++    return send(res, 201, toSafeUser(created));
++  }
++
++  if (pathname === "/api/admin/products" && req.method === "GET") {
++    if (!requireRole(COMPANY_ROLES, user)) return send(res, 403, { message: "Forbidden" });
++    return send(res, 200, db.products);
++  }
++
++  if (pathname === "/api/admin/products" && req.method === "POST") {
++    if (!requireRole(["admin", "sales"], user)) return send(res, 403, { message: "Forbidden" });
++    const body = await parseBody(req);
++    const created = { id: id("p"), ...body, createdAt: nowIso() };
++    db.products.push(created);
++    writeDb(db);
++    return send(res, 201, created);
++  }
++
++  const productIdMatch = pathname.match(/^\/api\/admin\/products\/([^/]+)$/);
++  if (productIdMatch && req.method === "PUT") {
++    if (!requireRole(["admin", "sales"], user)) return send(res, 403, { message: "Forbidden" });
++    const body = await parseBody(req);
++    const index = db.products.findIndex((p) => p.id === productIdMatch[1]);
++    if (index < 0) return send(res, 404, { message: "Product not found" });
++    db.products[index] = { ...db.products[index], ...body, id: db.products[index].id };
++    writeDb(db);
++    return send(res, 200, db.products[index]);
++  }
++
++  if (productIdMatch && req.method === "DELETE") {
++    if (!requireRole(["admin"], user)) return send(res, 403, { message: "Forbidden" });
++    const before = db.products.length;
++    db.products = db.products.filter((p) => p.id !== productIdMatch[1]);
++    if (db.products.length === before) return send(res, 404, { message: "Product not found" });
++    writeDb(db);
++    return send(res, 200, { ok: true });
++  }
++
++  const availabilityMatch = pathname.match(/^\/api\/admin\/products\/([^/]+)\/availability$/);
++  if (availabilityMatch && req.method === "PATCH") {
++    if (!requireRole(["admin", "sales"], user)) return send(res, 403, { message: "Forbidden" });
++    const body = await parseBody(req);
++    if (!["in_stock", "made_to_order", "temp_unavailable"].includes(body.availability)) {
++      return send(res, 400, { message: "Invalid availability" });
++    }
++    const product = db.products.find((p) => p.id === availabilityMatch[1]);
++    if (!product) return send(res, 404, { message: "Product not found" });
++    product.availability = body.availability;
++    writeDb(db);
++    return send(res, 200, product);
++  }
++
++  if (pathname === "/api/admin/media/cloud-link" && req.method === "POST") {
++    if (!requireRole(["admin", "sales"], user)) return send(res, 403, { message: "Forbidden" });
++    const body = await parseBody(req);
++    if (!body.cloudUrl) return send(res, 400, { message: "cloudUrl required" });
++    const media = { id: id("m"), cloudUrl: body.cloudUrl, productId: body.productId || null, type: body.type || "image", createdAt: nowIso() };
++    db.media.push(media);
++    if (body.productId) {
++      const product = db.products.find((p) => p.id === body.productId);
++      if (product) product.image = body.cloudUrl;
++    }
++    writeDb(db);
++    return send(res, 201, media);
++  }
++
++  if (pathname === "/api/orders" && req.method === "POST") {
++    const body = await parseBody(req);
++    const method = body.paymentMethod === "advance" ? "advance" : "cod";
++    const orderValue = Number(body.orderValue || 0);
++    const advanceAmount = method === "advance"
++      ? Number(body.advanceAmount || (orderValue * Number(body.advancePercent || 0)) / 100)
++      : 0;
++
++    const created = {
++      id: id("o"),
++      type: "order",
++      userId: user?.id || null,
++      customerName: body.customerName || "",
++      email: body.email || "",
++      phone: body.phone || "",
++      productId: body.productId || null,
++      productTitle: body.productTitle || body.title || "",
++      qty: Number(body.qty || 0),
++      customization: body.customization || body.customizationNotes || "",
++      requiredDays: Number(body.requiredDays || 0),
++      leadTime: body.leadTime || "",
++      deliveryAddress: body.deliveryAddress || body.address || "",
++      city: body.city || "",
++      state: body.state || "",
++      pincode: body.pincode || "",
++      notes: body.notes || "",
++      orderValue,
++      paymentMethod: method,
++      advancePercent: Number(body.advancePercent || 0),
++      advanceAmount,
++      balanceDue: Math.max(0, orderValue - advanceAmount),
++      paymentStatus: method === "cod" ? "pending" : (advanceAmount > 0 ? "partial" : "pending"),
++      status: "new",
++      deliveryOtp: null,
++      deliveryOtpVerified: false,
++      deliveryOtpVerifiedAt: null,
++      createdAt: nowIso()
++    };
++
++    db.orders.push(created);
++    pushNotification(db, {
++      title: "New order arrived",
++      message: `${created.customerName || "Customer"} placed order for ${created.productTitle || "product"}`,
++      type: "order",
++      audience: "company",
++      orderId: created.id
++    });
++    pushNotification(db, {
++      title: "Order confirmation email queued",
++      message: `Confirmation prepared for ${created.email || "customer"}.`,
++      type: "email",
++      audience: "ops",
++      orderId: created.id
++    });
++
++    writeDb(db);
++    return send(res, 201, created);
++  }
++
++  const startDeliveryMatch = pathname.match(/^\/api\/admin\/orders\/([^/]+)\/start-delivery$/);
++  if (startDeliveryMatch && req.method === "POST") {
++    if (!requireRole(["admin", "sales"], user)) return send(res, 403, { message: "Forbidden" });
++    const order = db.orders.find((o) => o.id === startDeliveryMatch[1]);
++    if (!order) return send(res, 404, { message: "Order not found" });
++    const otp = String(Math.floor(100000 + Math.random() * 900000));
++    order.deliveryOtp = otp;
++    order.status = "shipped";
++    pushNotification(db, {
++      title: "Delivery OTP generated",
++      message: `OTP ${otp} generated for order ${order.id}. Share with delivery team/customer.`,
++      type: "delivery",
++      audience: "company",
++      orderId: order.id,
++      createdBy: user.id
++    });
++    writeDb(db);
++    return send(res, 200, { orderId: order.id, deliveryOtp: otp, status: order.status });
++  }
++
++  const confirmDeliveryMatch = pathname.match(/^\/api\/orders\/([^/]+)\/confirm-delivery-otp$/);
++  if (confirmDeliveryMatch && req.method === "POST") {
++    const body = await parseBody(req);
++    const order = db.orders.find((o) => o.id === confirmDeliveryMatch[1]);
++    if (!order) return send(res, 404, { message: "Order not found" });
++    if (!order.deliveryOtp) return send(res, 400, { message: "Delivery OTP not generated" });
++    if (String(body.otp || "") !== String(order.deliveryOtp)) return send(res, 400, { message: "Invalid OTP" });
++
++    order.deliveryOtpVerified = true;
++    order.deliveryOtpVerifiedAt = nowIso();
++    order.status = "delivered";
++    order.paymentStatus = Number(order.balanceDue || 0) > 0 ? "pending_after_delivery" : "paid";
++    pushNotification(db, {
++      title: "Delivery confirmed",
++      message: `Order ${order.id} delivered successfully via OTP confirmation.`,
++      type: "delivery",
++      audience: "company",
++      orderId: order.id
++    });
++    writeDb(db);
++    return send(res, 200, order);
++  }
++
++  const confirmPaymentMatch = pathname.match(/^\/api\/admin\/orders\/([^/]+)\/confirm-payment$/);
++  if (confirmPaymentMatch && req.method === "POST") {
++    if (!requireRole(["admin", "financer"], user)) return send(res, 403, { message: "Forbidden" });
++    const body = await parseBody(req);
++    const order = db.orders.find((o) => o.id === confirmPaymentMatch[1]);
++    if (!order) return send(res, 404, { message: "Order not found" });
++
++    const amount = Number(body.amount || order.balanceDue || 0);
++    order.balanceDue = Math.max(0, Number(order.balanceDue || 0) - amount);
++    order.paymentStatus = order.balanceDue <= 0 ? "paid" : "partial";
++    order.paymentModeUsed = body.mode === "qr" ? "qr" : "web";
++    order.status = order.status === "delivered" && order.paymentStatus === "paid" ? "delivered" : order.status;
++
++    db.financeRecords.unshift({
++      id: id("fr"),
++      orderId: order.id,
++      amount,
++      mode: order.paymentModeUsed,
++      note: body.note || "Payment confirmed",
++      month: body.month || new Date().toISOString().slice(0, 7),
++      createdBy: user.id,
++      createdAt: nowIso()
++    });
++
++    pushNotification(db, {
++      title: "Payment received",
++      message: `Payment of ₹${amount} recorded for order ${order.id} via ${order.paymentModeUsed}.`,
++      type: "payment",
++      audience: "company",
++      orderId: order.id,
++      createdBy: user.id
++    });
++
++    writeDb(db);
++    return send(res, 200, order);
++  }
++
++  if (pathname === "/api/quotes" && req.method === "POST") {
++    const body = await parseBody(req);
++    const created = {
++      id: id("q"),
++      type: "quote",
++      userId: user?.id || null,
++      customerName: body.customerName || "",
++      email: body.email || "",
++      notes: body.notes || "",
++      status: "new",
++      createdAt: nowIso()
++    };
++    db.quotes.push(created);
++    writeDb(db);
++    return send(res, 201, created);
++  }
++
++  if (pathname === "/api/orders/my" && req.method === "GET") {
++    if (!user) return send(res, 401, { message: "Unauthorized" });
++    return send(res, 200, db.orders.filter((o) => o.userId === user.id));
++  }
++
++  if (pathname === "/api/admin/inbox" && req.method === "GET") {
++    if (!requireRole(COMPANY_ROLES, user)) return send(res, 403, { message: "Forbidden" });
++    const inbox = [...db.orders.map((o) => ({ ...o, type: "order" })), ...db.quotes.map((q) => ({ ...q, type: "quote" }))]
++      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
++    return send(res, 200, inbox);
++  }
++
++  const inboxOrderMatch = pathname.match(/^\/api\/admin\/inbox\/order\/([^/]+)$/);
++  if (inboxOrderMatch && req.method === "PATCH") {
++    if (!requireRole(["admin", "sales"], user)) return send(res, 403, { message: "Forbidden" });
++    const body = await parseBody(req);
++    const item = db.orders.find((o) => o.id === inboxOrderMatch[1]);
++    if (!item) return send(res, 404, { message: "Order not found" });
++    if (body.status && !ORDER_FLOW.includes(body.status)) return send(res, 400, { message: "Invalid status" });
++    Object.assign(item, { ...body, id: item.id });
++    writeDb(db);
++    return send(res, 200, item);
++  }
++
++  const inboxQuoteMatch = pathname.match(/^\/api\/admin\/inbox\/quote\/([^/]+)$/);
++  if (inboxQuoteMatch && req.method === "PATCH") {
++    if (!requireRole(["admin", "sales"], user)) return send(res, 403, { message: "Forbidden" });
++    const body = await parseBody(req);
++    const item = db.quotes.find((q) => q.id === inboxQuoteMatch[1]);
++    if (!item) return send(res, 404, { message: "Quote not found" });
++    Object.assign(item, { ...body, id: item.id });
++    writeDb(db);
++    return send(res, 200, item);
++  }
++
++  if (pathname === "/api/admin/inbox/export.csv" && req.method === "GET") {
++    if (!requireRole(COMPANY_ROLES, user)) return send(res, 403, { message: "Forbidden" });
++    const rows = [
++      ...db.orders.map((o) => ({ ...o, type: "order" })),
++      ...db.quotes.map((q) => ({ ...q, type: "quote" }))
++    ];
++    return send(res, 200, toCsv(rows), "text/csv");
++  }
++
++  if (pathname === "/api/admin/notifications" && req.method === "GET") {
++    if (!requireRole(COMPANY_ROLES, user)) return send(res, 403, { message: "Forbidden" });
++    return send(res, 200, db.notifications.slice(0, 100));
++  }
++
++  const markNotificationMatch = pathname.match(/^\/api\/admin\/notifications\/([^/]+)\/read$/);
++  if (markNotificationMatch && req.method === "PATCH") {
++    if (!requireRole(COMPANY_ROLES, user)) return send(res, 403, { message: "Forbidden" });
++    const notification = db.notifications.find((n) => n.id === markNotificationMatch[1]);
++    if (!notification) return send(res, 404, { message: "Notification not found" });
++    notification.readBy = Array.from(new Set([...(notification.readBy || []), user.id]));
++    writeDb(db);
++    return send(res, 200, notification);
++  }
++
++  if (pathname === "/api/admin/payment-options" && req.method === "GET") {
++    if (!requireRole(COMPANY_ROLES, user)) return send(res, 403, { message: "Forbidden" });
++    return send(res, 200, db.paymentOptions);
++  }
++
++  if (pathname === "/api/admin/payment-options" && req.method === "POST") {
++    if (!requireRole(["admin", "financer"], user)) return send(res, 403, { message: "Forbidden" });
++    const body = await parseBody(req);
++    if (!body.label || !body.type) return send(res, 400, { message: "label and type required" });
++    const created = {
++      id: id("po"),
++      label: body.label,
++      type: body.type,
++      details: body.details || "",
++      qrImageUrl: body.qrImageUrl || "",
++      enabled: body.enabled !== false,
++      createdBy: user.id,
++      createdAt: nowIso()
++    };
++    db.paymentOptions.unshift(created);
++    pushNotification(db, {
++      title: "Payment option updated",
++      message: `${user.email} added a new payment option (${created.label}).`,
++      type: "payment",
++      audience: "company",
++      createdBy: user.id
++    });
++    writeDb(db);
++    return send(res, 201, created);
++  }
++
++  if (pathname === "/api/finance/records" && req.method === "GET") {
++    if (!requireRole(["admin", "financer"], user)) return send(res, 403, { message: "Forbidden" });
++    return send(res, 200, db.financeRecords);
++  }
++
++  if (pathname === "/api/finance/records" && req.method === "POST") {
++    if (!requireRole(["admin", "financer"], user)) return send(res, 403, { message: "Forbidden" });
++    const body = await parseBody(req);
++    const created = {
++      id: id("fr"),
++      month: body.month || new Date().toISOString().slice(0, 7),
++      amount: Number(body.amount || 0),
++      category: body.category || "income",
++      note: body.note || "",
++      createdBy: user.id,
++      createdAt: nowIso()
++    };
++    db.financeRecords.unshift(created);
++    pushNotification(db, {
++      title: "Finance update",
++      message: `${user.email} uploaded finance data for ${created.month}.`,
++      type: "finance",
++      audience: "company",
++      createdBy: user.id
++    });
++    writeDb(db);
++    return send(res, 201, created);
++  }
++
++  if (pathname === "/api/admin/sales-concerns" && req.method === "GET") {
++    if (!requireRole(["admin", "sales"], user)) return send(res, 403, { message: "Forbidden" });
++    return send(res, 200, db.salesConcerns);
++  }
++
++  if (pathname === "/api/admin/sales-concerns" && req.method === "POST") {
++    if (!requireRole(["sales", "admin"], user)) return send(res, 403, { message: "Forbidden" });
++    const body = await parseBody(req);
++    const created = {
++      id: id("sc"),
++      title: body.title || "Sales concern",
++      details: body.details || "",
++      severity: body.severity || "medium",
++      status: "open",
++      createdBy: user.id,
++      createdAt: nowIso()
++    };
++    db.salesConcerns.unshift(created);
++    pushNotification(db, {
++      title: "Sales concern reported",
++      message: `${user.email} raised: ${created.title}`,
++      type: "sales",
++      audience: "admin",
++      createdBy: user.id
++    });
++    writeDb(db);
++    return send(res, 201, created);
++  }
++
++  if (pathname === "/api/admin/finance-issues" && req.method === "GET") {
++    if (!requireRole(["admin", "financer"], user)) return send(res, 403, { message: "Forbidden" });
++    return send(res, 200, db.financeIssues);
++  }
++
++  if (pathname === "/api/admin/finance-issues" && req.method === "POST") {
++    if (!requireRole(["admin", "financer"], user)) return send(res, 403, { message: "Forbidden" });
++    const body = await parseBody(req);
++    const created = {
++      id: id("fi"),
++      title: body.title || "Finance issue",
++      details: body.details || "",
++      severity: body.severity || "high",
++      status: "open",
++      createdBy: user.id,
++      createdAt: nowIso()
++    };
++    db.financeIssues.unshift(created);
++    pushNotification(db, {
++      title: "Finance issue reported",
++      message: `${user.email} raised: ${created.title}`,
++      type: "finance",
++      audience: "admin",
++      createdBy: user.id
++    });
++    writeDb(db);
++    return send(res, 201, created);
++  }
++
++  return send(res, 404, { message: "Not found" });
++});
++
++server.listen(5001, () => {
++  console.log("API running at http://localhost:5001");
++});
+diff --git a/src/App.jsx b/src/App.jsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..1b020d79897437dd9f2bdd9ab5d8a3a208fcd154
+--- /dev/null
++++ b/src/App.jsx
+@@ -0,0 +1,9 @@
++import Home from "./pages/Home.jsx";
++import Admin from "./pages/Admin.jsx";
++
++const App = () => {
++  const isAdmin = window.location.pathname.startsWith("/admin");
++  return isAdmin ? <Admin /> : <Home />;
++};
++
++export default App;
+diff --git a/src/data/products.js b/src/data/products.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..1d56cab4c0c889b7fe26bbf34f5655548588d36c
+--- /dev/null
++++ b/src/data/products.js
+@@ -0,0 +1,40 @@
++const products = [
++  {
++    id: 1,
++    title: "Shopping & Carry Bags",
++    category: "Retail",
++    description: "Premium compostable carry bags for branded stores and daily retail checkout.",
++    image: "/products/shopping-bags.svg",
++    pricePerUnit: 8.5,
++    moq: 5000,
++    leadTime: "8-12 days",
++    material: "Corn-starch PLA",
++    customization: ["Single-color logo", "Multi-color print", "Private label"]
++  },
++  {
++    id: 2,
++    title: "Grocery & Supermarket Bags",
++    category: "Supermarket",
++    description: "Food-safe, high-strength grocery bags for supermarkets and provision chains.",
++    image: "/products/grocery-bags.svg",
++    pricePerUnit: 6.25,
++    moq: 10000,
++    leadTime: "7-10 days",
++    material: "Bio-based polymer blend",
++    customization: ["Store branding", "Offer print", "Barcode-ready panel"]
++  },
++  {
++    id: 3,
++    title: "Compostable Roll-On Bags",
++    category: "Restaurant",
++    description: "Perforated roll-on bag formats for kitchens, delivery counters, and service hubs.",
++    image: "/products/roll-on-bags.svg",
++    pricePerUnit: 210,
++    moq: 250,
++    leadTime: "6-10 days",
++    material: "Biodegradable roll film",
++    customization: ["Chain branding", "Outlet code", "Thank-you message"]
++  }
++];
++
++export default products;
+diff --git a/src/main.jsx b/src/main.jsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..557be5eb4a345a29e43a0884dc77670ef3ba4889
+--- /dev/null
++++ b/src/main.jsx
+@@ -0,0 +1,10 @@
++import React from "react";
++import ReactDOM from "react-dom/client";
++import App from "./App.jsx";
++import "./styles/index.css";
++
++ReactDOM.createRoot(document.getElementById("root")).render(
++  <React.StrictMode>
++    <App />
++  </React.StrictMode>
++);
+diff --git a/src/pages/Admin.jsx b/src/pages/Admin.jsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..353b0a0f1692149288cc7ce56854c94d9313d6d9
+--- /dev/null
++++ b/src/pages/Admin.jsx
+@@ -0,0 +1,358 @@
++import { useEffect, useMemo, useState } from "react";
++
++const api = "http://127.0.0.1:5001";
++const adminRoles = ["admin", "sales", "viewer", "financer"];
++
++const emptyProduct = {
++  title: "",
++  category: "",
++  material: "",
++  moq: 0,
++  leadTime: "",
++  pricePerUnit: 0,
++  image: "",
++  customization: "",
++  availability: "in_stock",
++  stockQty: 0,
++  pricingTiers: "5000:8.5"
++};
++
++const Admin = () => {
++  const [auth, setAuth] = useState(() => JSON.parse(localStorage.getItem("adminAuth") || "null"));
++  const [login, setLogin] = useState({ email: "admin@econirva.com", password: "admin123" });
++  const [loginError, setLoginError] = useState("");
++
++  const [products, setProducts] = useState([]);
++  const [inbox, setInbox] = useState([]);
++  const [notifications, setNotifications] = useState([]);
++  const [stats, setStats] = useState(null);
++  const [paymentOptions, setPaymentOptions] = useState([]);
++  const [financeRecords, setFinanceRecords] = useState([]);
++
++  const [form, setForm] = useState(emptyProduct);
++  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "" });
++  const [paymentForm, setPaymentForm] = useState({ label: "", type: "upi", details: "", qrImageUrl: "" });
++  const [financeForm, setFinanceForm] = useState({ month: "", amount: "", category: "income", note: "" });
++  const [salesConcernForm, setSalesConcernForm] = useState({ title: "", details: "", severity: "medium" });
++
++  const headers = useMemo(
++    () => ({ "Content-Type": "application/json", Authorization: `Bearer ${auth?.token || ""}` }),
++    [auth]
++  );
++
++  const isAdmin = auth?.user?.role === "admin";
++  const isFinancer = auth?.user?.role === "financer";
++  const canFinance = isAdmin || isFinancer;
++
++  const loadData = async () => {
++    if (!auth?.token) return;
++
++    const reqs = [
++      fetch(`${api}/api/admin/products`, { headers }),
++      fetch(`${api}/api/admin/inbox`, { headers }),
++      fetch(`${api}/api/admin/notifications`, { headers }),
++      fetch(`${api}/api/admin/stats`, { headers }),
++      fetch(`${api}/api/admin/payment-options`, { headers })
++    ];
++
++    if (canFinance) reqs.push(fetch(`${api}/api/finance/records`, { headers }));
++
++    const responses = await Promise.all(reqs);
++
++    if (responses[0].ok) setProducts(await responses[0].json());
++    if (responses[1].ok) setInbox(await responses[1].json());
++    if (responses[2].ok) setNotifications(await responses[2].json());
++    if (responses[3].ok) setStats(await responses[3].json());
++    if (responses[4].ok) setPaymentOptions(await responses[4].json());
++    if (canFinance && responses[5]?.ok) setFinanceRecords(await responses[5].json());
++  };
++
++  useEffect(() => {
++    loadData();
++  }, [auth]);
++
++  const doLogin = async (event) => {
++    event.preventDefault();
++    const res = await fetch(`${api}/api/auth/login`, {
++      method: "POST",
++      headers: { "Content-Type": "application/json" },
++      body: JSON.stringify(login)
++    });
++    const data = await res.json();
++    if (!res.ok) {
++      setLoginError(data?.message || "Login failed");
++      return;
++    }
++
++    if (!adminRoles.includes(data.user?.role)) {
++      setLoginError("Admin dashboard is only for company team (admin/sales/viewer/financer).");
++      localStorage.removeItem("adminAuth");
++      setAuth(null);
++      return;
++    }
++
++    setLoginError("");
++    setAuth(data);
++    localStorage.setItem("adminAuth", JSON.stringify(data));
++  };
++
++  const saveProduct = async (event) => {
++    event.preventDefault();
++    const payload = {
++      ...form,
++      moq: Number(form.moq),
++      stockQty: Number(form.stockQty),
++      pricePerUnit: Number(form.pricePerUnit),
++      customization: form.customization.split(",").map((item) => item.trim()).filter(Boolean),
++      pricingTiers: form.pricingTiers
++        .split(",")
++        .map((pair) => pair.trim())
++        .filter(Boolean)
++        .map((pair) => {
++          const [minQty, pricePerUnit] = pair.split(":");
++          return { minQty: Number(minQty), pricePerUnit: Number(pricePerUnit) };
++        })
++    };
++
++    const res = await fetch(`${api}/api/admin/products`, {
++      method: "POST",
++      headers,
++      body: JSON.stringify(payload)
++    });
++
++    if (res.ok) {
++      setForm(emptyProduct);
++      loadData();
++    }
++  };
++
++  const changePassword = async (event) => {
++    event.preventDefault();
++    const res = await fetch(`${api}/api/auth/change-password`, {
++      method: "POST",
++      headers,
++      body: JSON.stringify(passwordForm)
++    });
++    if (res.ok) {
++      setPasswordForm({ currentPassword: "", newPassword: "" });
++      alert("Password changed successfully");
++    }
++  };
++
++  const addPaymentOption = async (event) => {
++    event.preventDefault();
++    const res = await fetch(`${api}/api/admin/payment-options`, {
++      method: "POST",
++      headers,
++      body: JSON.stringify(paymentForm)
++    });
++    if (res.ok) {
++      setPaymentForm({ label: "", type: "upi", details: "", qrImageUrl: "" });
++      loadData();
++    }
++  };
++
++  const addFinanceRecord = async (event) => {
++    event.preventDefault();
++    const res = await fetch(`${api}/api/finance/records`, {
++      method: "POST",
++      headers,
++      body: JSON.stringify({ ...financeForm, amount: Number(financeForm.amount || 0) })
++    });
++    if (res.ok) {
++      setFinanceForm({ month: "", amount: "", category: "income", note: "" });
++      loadData();
++    }
++  };
++
++  const addSalesConcern = async (event) => {
++    event.preventDefault();
++    const res = await fetch(`${api}/api/admin/sales-concerns`, {
++      method: "POST",
++      headers,
++      body: JSON.stringify(salesConcernForm)
++    });
++    if (res.ok) {
++      setSalesConcernForm({ title: "", details: "", severity: "medium" });
++      loadData();
++    }
++  };
++
++  const generateDeliveryOtp = async (orderId) => {
++    const res = await fetch(`${api}/api/admin/orders/${orderId}/start-delivery`, { method: "POST", headers });
++    if (res.ok) {
++      const data = await res.json();
++      alert(`Delivery OTP for ${orderId}: ${data.deliveryOtp}`);
++      loadData();
++    }
++  };
++
++  const completePayment = async (orderId, mode) => {
++    const res = await fetch(`${api}/api/admin/orders/${orderId}/confirm-payment`, {
++      method: "POST",
++      headers,
++      body: JSON.stringify({ mode })
++    });
++    if (res.ok) loadData();
++  };
++
++  const orders = inbox.filter((item) => item.type === "order");
++  const orderBoard = {
++    newlyArrived: orders.filter((o) => o.status === "new").length,
++    pending: orders.filter((o) => o.status !== "delivered" || o.paymentStatus !== "paid").length,
++    completed: orders.filter((o) => o.status === "delivered" && o.paymentStatus === "paid").length
++  };
++
++  if (!auth) {
++    return (
++      <div className="mx-auto mt-16 max-w-md rounded-2xl border bg-white p-6 shadow">
++        <h1 className="text-2xl font-bold text-[#1b2b4d]">Admin Login</h1>
++        <form className="mt-4 space-y-3" onSubmit={doLogin}>
++          <input className="w-full rounded border px-3 py-2" value={login.email} onChange={(e) => setLogin((p) => ({ ...p, email: e.target.value }))} />
++          <input type="password" className="w-full rounded border px-3 py-2" value={login.password} onChange={(e) => setLogin((p) => ({ ...p, password: e.target.value }))} />
++          <button className="w-full rounded bg-[#0f9f6b] px-4 py-2 font-semibold text-white">Login</button>
++          {loginError && <p className="text-sm text-red-600">{loginError}</p>}
++        </form>
++      </div>
++    );
++  }
++
++  return (
++    <div className="bg-[#eef7f2] p-4 md:p-8">
++      <div className="mx-auto max-w-7xl space-y-6">
++        <div className="flex items-center justify-between rounded-2xl border bg-white p-4">
++          <div>
++            <h1 className="text-2xl font-bold text-[#1b2b4d]">/admin dashboard</h1>
++            <p className="text-sm text-slate-500">Logged in as {auth.user.email} ({auth.user.role})</p>
++          </div>
++          <button className="rounded border px-3 py-2" onClick={() => { localStorage.removeItem("adminAuth"); setAuth(null); }}>Logout</button>
++        </div>
++
++        <section className="grid gap-3 md:grid-cols-4">
++          <div className="rounded border bg-white p-3"><p className="text-xs text-slate-500">Newly arrived</p><p className="text-2xl font-bold">{orderBoard.newlyArrived}</p></div>
++          <div className="rounded border bg-white p-3"><p className="text-xs text-slate-500">Pending orders</p><p className="text-2xl font-bold">{orderBoard.pending}</p></div>
++          <div className="rounded border bg-white p-3"><p className="text-xs text-slate-500">Completed orders</p><p className="text-2xl font-bold">{orderBoard.completed}</p></div>
++          <div className="rounded border bg-white p-3"><p className="text-xs text-slate-500">Unread notifications</p><p className="text-2xl font-bold">{stats?.unreadNotifications || notifications.length}</p></div>
++        </section>
++
++        <div className="grid gap-6 lg:grid-cols-2">
++          <div className="rounded-2xl border bg-white p-4 shadow-sm">
++            <h2 className="text-xl font-bold">Orders Section</h2>
++            <div className="mt-3 max-h-80 space-y-3 overflow-auto">
++              {orders.length === 0 && <p className="text-sm text-slate-500">No orders yet.</p>}
++              {orders.map((order) => (
++                <div key={order.id} className="rounded border p-3 text-sm">
++                  <p className="font-semibold">{order.customerName || "Customer"} · {order.email || "-"}</p>
++                  <p>Ordered: {order.productTitle || "N/A"} · Qty {order.qty || 0} · Status {order.status}</p>
++                  <p>Customization: {order.customization || "None"}</p>
++                  <p>Delivery: {order.deliveryAddress || "N/A"}, {order.city || ""}</p>
++                  <p>Payment: {order.paymentStatus || "pending"} · Due ₹{order.balanceDue || 0}</p>
++                  {(isAdmin || auth.user.role === "sales") && <button className="mt-2 rounded border px-2 py-1" onClick={() => generateDeliveryOtp(order.id)}>Generate Delivery OTP</button>}
++                  {canFinance && order.deliveryOtpVerified && order.paymentStatus !== "paid" && (
++                    <div className="mt-2 flex gap-2">
++                      <button className="rounded border px-2 py-1" onClick={() => completePayment(order.id, "web")}>Mark Web Payment</button>
++                      <button className="rounded border px-2 py-1" onClick={() => completePayment(order.id, "qr")}>Mark QR Payment</button>
++                    </div>
++                  )}
++                </div>
++              ))}
++            </div>
++          </div>
++
++          <div className="rounded-2xl border bg-white p-4 shadow-sm">
++            <h2 className="text-xl font-bold">Notifications</h2>
++            <div className="mt-3 max-h-80 space-y-2 overflow-auto text-sm">
++              {notifications.length === 0 && <p className="text-slate-500">No notifications yet.</p>}
++              {notifications.map((n) => (
++                <div key={n.id} className="rounded border p-2">
++                  <p className="font-semibold">{n.title}</p>
++                  <p>{n.message}</p>
++                </div>
++              ))}
++            </div>
++          </div>
++        </div>
++
++        <div className="grid gap-6 lg:grid-cols-2">
++          <form onSubmit={saveProduct} className="rounded-2xl border bg-white p-4 shadow-sm">
++            <h2 className="text-xl font-bold">Add Product</h2>
++            <div className="mt-3 grid gap-2 sm:grid-cols-2">
++              {Object.keys(emptyProduct).map((key) => (
++                <input key={key} placeholder={key} value={form[key]} onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))} className="rounded border px-3 py-2 text-sm" />
++              ))}
++            </div>
++            <button className="mt-3 rounded bg-[#0f9f6b] px-4 py-2 text-sm font-semibold text-white">Save Product</button>
++          </form>
++
++          <form onSubmit={changePassword} className="rounded-2xl border bg-white p-4 shadow-sm">
++            <h2 className="text-xl font-bold">Change your password</h2>
++            <div className="mt-3 space-y-2">
++              <input type="password" placeholder="Current password" value={passwordForm.currentPassword} onChange={(e) => setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
++              <input type="password" placeholder="New password" value={passwordForm.newPassword} onChange={(e) => setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
++              <button className="rounded bg-[#1b2b4d] px-4 py-2 text-sm font-semibold text-white">Update Password</button>
++            </div>
++          </form>
++        </div>
++
++        {(isAdmin || isFinancer) && (
++          <div className="grid gap-6 lg:grid-cols-2">
++            <form onSubmit={addPaymentOption} className="rounded-2xl border bg-white p-4 shadow-sm">
++              <h2 className="text-xl font-bold">Finance Page · Payment Options</h2>
++              <div className="mt-3 space-y-2">
++                <input placeholder="Label" value={paymentForm.label} onChange={(e) => setPaymentForm((p) => ({ ...p, label: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
++                <input placeholder="Type (upi/bank/qr)" value={paymentForm.type} onChange={(e) => setPaymentForm((p) => ({ ...p, type: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
++                <input placeholder="Details" value={paymentForm.details} onChange={(e) => setPaymentForm((p) => ({ ...p, details: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
++                <input placeholder="QR Image URL" value={paymentForm.qrImageUrl} onChange={(e) => setPaymentForm((p) => ({ ...p, qrImageUrl: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
++                <button className="rounded bg-[#0f9f6b] px-4 py-2 text-sm font-semibold text-white">Upload Payment Option</button>
++              </div>
++              <div className="mt-3 space-y-1 text-xs text-slate-600">
++                {paymentOptions.map((opt) => <p key={opt.id}>{opt.label} · {opt.type}</p>)}
++              </div>
++            </form>
++
++            <form onSubmit={addFinanceRecord} className="rounded-2xl border bg-white p-4 shadow-sm">
++              <h2 className="text-xl font-bold">Finance Monthly Data Upload</h2>
++              <div className="mt-3 space-y-2">
++                <input placeholder="Month (YYYY-MM)" value={financeForm.month} onChange={(e) => setFinanceForm((p) => ({ ...p, month: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
++                <input placeholder="Amount" value={financeForm.amount} onChange={(e) => setFinanceForm((p) => ({ ...p, amount: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
++                <input placeholder="Category" value={financeForm.category} onChange={(e) => setFinanceForm((p) => ({ ...p, category: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
++                <input placeholder="Note" value={financeForm.note} onChange={(e) => setFinanceForm((p) => ({ ...p, note: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
++                <button className="rounded bg-[#1b2b4d] px-4 py-2 text-sm font-semibold text-white">Upload Finance Data</button>
++              </div>
++              <div className="mt-3 max-h-28 space-y-1 overflow-auto text-xs text-slate-600">
++                {financeRecords.map((r) => <p key={r.id}>{r.month} · ₹{r.amount} · {r.note}</p>)}
++              </div>
++            </form>
++          </div>
++        )}
++
++        {(isAdmin || auth.user.role === "sales") && (
++          <form onSubmit={addSalesConcern} className="rounded-2xl border bg-white p-4 shadow-sm">
++            <h2 className="text-xl font-bold">Sales Concern (pops in admin notifications)</h2>
++            <div className="mt-3 grid gap-2 sm:grid-cols-3">
++              <input placeholder="Title" value={salesConcernForm.title} onChange={(e) => setSalesConcernForm((p) => ({ ...p, title: e.target.value }))} className="rounded border px-3 py-2 text-sm" />
++              <input placeholder="Details" value={salesConcernForm.details} onChange={(e) => setSalesConcernForm((p) => ({ ...p, details: e.target.value }))} className="rounded border px-3 py-2 text-sm" />
++              <input placeholder="Severity" value={salesConcernForm.severity} onChange={(e) => setSalesConcernForm((p) => ({ ...p, severity: e.target.value }))} className="rounded border px-3 py-2 text-sm" />
++            </div>
++            <button className="mt-3 rounded bg-[#0f9f6b] px-4 py-2 text-sm font-semibold text-white">Submit Concern</button>
++          </form>
++        )}
++
++        <div className="rounded-2xl border bg-white p-4 shadow-sm">
++          <h2 className="text-xl font-bold">Products</h2>
++          <div className="mt-3 grid gap-3 md:grid-cols-2">
++            {products.map((product) => (
++              <div key={product.id} className="rounded border p-3 text-sm">
++                <p className="font-semibold">{product.title}</p>
++                <p>{product.category} · {product.material}</p>
++                <p>Stock {product.stockQty} · MOQ {product.moq} · ₹{product.pricePerUnit}</p>
++              </div>
++            ))}
++          </div>
++        </div>
++      </div>
++    </div>
++  );
++};
++
++export default Admin;
+diff --git a/src/pages/Home.jsx b/src/pages/Home.jsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..0dbea8ebe7133bc632a1861be0479d6a4d44228d
+--- /dev/null
++++ b/src/pages/Home.jsx
+@@ -0,0 +1,343 @@
++import { useMemo, useState } from "react";
++import products from "../data/products.js";
++
++const api = "http://127.0.0.1:5001";
++
++const useCaseOptions = ["Restaurant", "Sweet Shop", "Pharmacy", "Supermarket", "Boutique"];
++
++const productCards = [
++  ...products,
++  {
++    id: 4,
++    title: "Garbage Bio-Medical Bags",
++    description: "Leak-resistant disposal bags with standards-compliant quality for clinical use."
++  }
++];
++
++const Home = () => {
++  const [estimateForm, setEstimateForm] = useState({
++    productType: "Carry Bag",
++    size: "12x16",
++    quality: "Standard",
++    color: "Plain White",
++    printingColors: "None",
++    quantity: 1000
++  });
++
++  const [orderForm, setOrderForm] = useState({
++    name: "",
++    email: "",
++    phone: "",
++    company: "",
++    product: "",
++    size: "",
++    quality: "",
++    color: "",
++    printingColors: "",
++    quantity: "",
++    address: "",
++    notes: ""
++  });
++
++  const [quoteForm, setQuoteForm] = useState({
++    name: "",
++    company: "",
++    email: "",
++    phone: "",
++    productType: "",
++    size: "",
++    color: "",
++    quantity: "",
++    useCases: [],
++    logoUrl: "",
++    notes: ""
++  });
++
++  const estimateValue = useMemo(() => {
++    const base = estimateForm.productType === "Carry Bag" ? 6 : 8;
++    const qualityMul = estimateForm.quality === "High-strength" ? 1.3 : 1;
++    const printMul = estimateForm.printingColors === "None" ? 1 : 1.15;
++    const colorMul = estimateForm.color === "Plain White" ? 1 : 1.1;
++    return Math.round(base * qualityMul * printMul * colorMul * Number(estimateForm.quantity || 0));
++  }, [estimateForm]);
++
++  const sendOrder = async (event) => {
++    event.preventDefault();
++    await fetch(`${api}/api/orders`, {
++      method: "POST",
++      headers: { "Content-Type": "application/json" },
++      body: JSON.stringify({
++        customerName: orderForm.name,
++        email: orderForm.email,
++        phone: orderForm.phone,
++        productTitle: orderForm.product,
++        qty: Number(orderForm.quantity || 0),
++        customization: `${orderForm.quality || ""}, ${orderForm.color || ""}, ${orderForm.printingColors || ""}`,
++        deliveryAddress: orderForm.address,
++        notes: `${orderForm.company || ""} | ${orderForm.notes || ""}`,
++        orderValue: estimateValue,
++        paymentMethod: "advance",
++        advancePercent: 20
++      })
++    });
++    alert("Order placed. Company team will confirm shortly.");
++    setOrderForm({
++      name: "",
++      email: "",
++      phone: "",
++      company: "",
++      product: "",
++      size: "",
++      quality: "",
++      color: "",
++      printingColors: "",
++      quantity: "",
++      address: "",
++      notes: ""
++    });
++  };
++
++  const sendQuote = async (event) => {
++    event.preventDefault();
++    await fetch(`${api}/api/quotes`, {
++      method: "POST",
++      headers: { "Content-Type": "application/json" },
++      body: JSON.stringify({
++        customerName: quoteForm.name,
++        email: quoteForm.email,
++        notes: `${quoteForm.company} | ${quoteForm.phone} | ${quoteForm.productType} | ${quoteForm.size} | ${quoteForm.color} | ${quoteForm.quantity} | ${quoteForm.useCases.join(",")} | ${quoteForm.logoUrl} | ${quoteForm.notes}`
++      })
++    });
++    alert("Quote request submitted.");
++    setQuoteForm({
++      name: "",
++      company: "",
++      email: "",
++      phone: "",
++      productType: "",
++      size: "",
++      color: "",
++      quantity: "",
++      useCases: [],
++      logoUrl: "",
++      notes: ""
++    });
++  };
++
++  return (
++    <main className="bg-[#d9e6e2] text-[#1c2f52]">
++      <section className="bg-[#0d714b] px-6 pb-16 pt-3 text-white lg:px-20">
++        <div className="mx-auto max-w-6xl">
++          <nav className="rounded-full bg-[#dce8e4] px-5 py-3 text-[#16334e] shadow">
++            <div className="flex items-center justify-between">
++              <div className="flex items-center gap-3">
++                <img src="/images/econirva-logo.svg" alt="logo" className="h-10 w-10 rounded-full bg-white p-1" />
++                <div>
++                  <p className="text-2xl font-extrabold leading-none">ECONIRVA</p>
++                  <p className="text-xs font-semibold">BIO SOLUTIONS</p>
++                </div>
++              </div>
++              <div className="hidden gap-8 text-lg md:flex">
++                <a href="#products">Products</a>
++                <a href="#colors">Colors</a>
++                <a href="#estimate">Estimate</a>
++                <a href="#order">Order</a>
++                <a href="#quote">Quote</a>
++              </div>
++            </div>
++          </nav>
++
++          <div className="mt-10 max-w-3xl">
++            <span className="inline-block rounded-full bg-[#2b8f6d] px-4 py-1 text-sm font-semibold">🌿 Engineered for Nature</span>
++            <h1 className="mt-4 text-6xl font-black leading-tight">Go Green with ECONIRVA Bio Solutions</h1>
++            <p className="mt-4 text-3xl text-[#dcf4ea]">Manufacturer of 100% Biodegradable & Compostable Carry Bags, Pouches & Trash Bags. Bulk & Custom Orders Welcome.</p>
++            <div className="mt-4 flex flex-wrap gap-2 text-sm font-semibold">
++              {[
++                "Eco-friendly",
++                "Durable",
++                "Non-toxic",
++                "100% Compostable"
++              ].map((chip) => (
++                <span key={chip} className="rounded-full bg-[#178c63] px-3 py-1">{chip}</span>
++              ))}
++            </div>
++            <div className="mt-6 flex flex-wrap gap-3">
++              <a href="#order" className="rounded-lg bg-white px-6 py-3 font-bold text-[#0d714b]">Order Now</a>
++              <a href="#quote" className="rounded-lg bg-[#169667] px-6 py-3 font-bold">Request a Quote</a>
++              <a href="#estimate" className="rounded-lg bg-[#169667] px-6 py-3 font-bold">Instant Estimate</a>
++            </div>
++          </div>
++        </div>
++      </section>
++
++      <section id="products" className="mx-auto -mt-8 max-w-6xl rounded-full bg-[#ccecdf] px-6 py-4 text-center shadow md:w-fit">
++        <div className="flex gap-8 text-lg font-semibold text-[#0f6d49]">
++          <a href="#products">Products</a>
++          <a href="#colors">Colors</a>
++          <a href="#estimate">Estimate</a>
++          <a href="#order">Order</a>
++          <a href="#quote">Quote</a>
++        </div>
++      </section>
++
++      <section className="mx-auto max-w-6xl px-6 py-12 lg:px-0">
++        <h2 className="text-center text-6xl font-black">Our Product Range</h2>
++        <p className="mx-auto mt-4 max-w-4xl text-center text-3xl text-slate-600">
++          Available in plain white or custom colors. Printing & branding customized as per your business needs and logos.
++        </p>
++        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
++          {productCards.map((product) => (
++            <article key={product.id} className="rounded-3xl border border-slate-300 bg-[#e7eceb] p-5 shadow-sm">
++              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#d4e4dc] text-3xl">🔒</div>
++              <h3 className="text-4xl font-extrabold leading-tight">{product.title}</h3>
++              <p className="mt-2 text-2xl text-slate-600">{product.description}</p>
++              <div className="mt-4 flex flex-wrap gap-2 text-xl font-semibold text-slate-600">
++                <span className="rounded bg-[#dde2e6] px-2 py-1">Standard</span>
++                <span className="rounded bg-[#dde2e6] px-2 py-1">High-strength</span>
++                <span className="rounded bg-[#dde2e6] px-2 py-1">Custom Sizes</span>
++              </div>
++            </article>
++          ))}
++        </div>
++        <p className="mt-6 text-center text-xl text-slate-600">Ideal for Restaurants • Sweet Shops • Pharmacies • Supermarkets • Boutiques</p>
++      </section>
++
++      <section id="colors" className="bg-[#cfe1db] py-14">
++        <div className="mx-auto grid max-w-6xl gap-8 px-6 lg:grid-cols-2 lg:px-0">
++          <div>
++            <h2 className="text-5xl font-black">Custom Colors & Branding</h2>
++            <p className="mt-3 text-2xl text-slate-600">Choose from a wide range of color styles. Home-use friendly light colors and bold brand colors are available.</p>
++            <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-600">
++              <li>Light pastel colors ideal for home use</li>
++              <li>Bright retail palettes for supermarkets and boutiques</li>
++              <li>One- to four-color printing options</li>
++              <li>Brand logo + custom text printing support</li>
++            </ul>
++          </div>
++          <div className="rounded-2xl bg-white p-5 shadow">
++            <p className="text-lg font-semibold text-slate-500">Home Light / Retail Bright / Pastel / Bold</p>
++            <div className="mt-4 grid grid-cols-6 gap-3">
++              {["#9DD7B6", "#A9C9E2", "#DAB9C6", "#1CA35F", "#F0A500", "#3B7DE3", "#E0B7D6", "#A9D98F", "#95CBE5", "#1F2F4A", "#E51D48", "#6D2BCF"].map((color) => (
++                <span key={color} className="h-12 rounded-xl" style={{ background: color }} />
++              ))}
++            </div>
++            <p className="mt-4 text-lg text-slate-500">Tell us your preferred palette and we'll customize the color and printing to your brand.</p>
++          </div>
++        </div>
++      </section>
++
++      <section id="estimate" className="mx-auto max-w-6xl px-6 py-14 lg:px-0">
++        <h2 className="text-center text-5xl font-black">Instant Price Estimator</h2>
++        <p className="mt-2 text-center text-xl text-slate-600">Get an approximate price for your order. Final quote depends on material, thickness and design.</p>
++        <div className="mt-6 grid gap-4 lg:grid-cols-2">
++          <div className="rounded-2xl bg-white p-4 shadow">
++            <div className="grid gap-3 sm:grid-cols-2">
++              {Object.keys(estimateForm).map((key) => (
++                <input
++                  key={key}
++                  value={estimateForm[key]}
++                  onChange={(e) => setEstimateForm((p) => ({ ...p, [key]: e.target.value }))}
++                  placeholder={key}
++                  className="rounded border px-3 py-2 text-lg"
++                />
++              ))}
++            </div>
++          </div>
++          <div className="rounded-2xl bg-white p-4 shadow">
++            <p className="text-lg text-slate-500">Approx. unit price: ₹6.00</p>
++            <p className="text-4xl font-black">Estimated total: ₹{estimateValue.toLocaleString("en-IN")}</p>
++            <p className="mt-2 text-lg text-slate-500">Final quote confirmed after artwork and size approval.</p>
++          </div>
++        </div>
++      </section>
++
++      <section id="order" className="mx-auto max-w-6xl px-6 py-4 lg:px-0">
++        <div className="rounded-2xl bg-white p-6 shadow">
++          <h2 className="text-center text-5xl font-black">Order Now</h2>
++          <p className="text-center text-xl text-slate-500">Place a direct order and receive a confirmation email.</p>
++          <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={sendOrder}>
++            {Object.keys(orderForm).map((key) => (
++              key === "address" || key === "notes" ? (
++                <textarea
++                  key={key}
++                  value={orderForm[key]}
++                  onChange={(e) => setOrderForm((p) => ({ ...p, [key]: e.target.value }))}
++                  placeholder={key}
++                  className="sm:col-span-2 rounded border px-3 py-2 text-lg"
++                />
++              ) : (
++                <input
++                  key={key}
++                  value={orderForm[key]}
++                  onChange={(e) => setOrderForm((p) => ({ ...p, [key]: e.target.value }))}
++                  placeholder={key}
++                  className="rounded border px-3 py-2 text-lg"
++                />
++              )
++            ))}
++            <button className="sm:col-span-2 ml-auto rounded-lg bg-[#149e6a] px-6 py-2 text-xl font-bold text-white">Place Order</button>
++          </form>
++        </div>
++      </section>
++
++      <section id="quote" className="mx-auto max-w-6xl px-6 py-10 lg:px-0">
++        <div className="rounded-2xl bg-white p-6 shadow">
++          <h2 className="text-center text-5xl font-black">Request a Quote</h2>
++          <p className="text-center text-xl text-slate-500">Tell us what you need and we'll get back with pricing and timelines.</p>
++          <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={sendQuote}>
++            {Object.entries(quoteForm).map(([key, value]) => {
++              if (key === "useCases") {
++                return (
++                  <div key={key} className="sm:col-span-2">
++                    <p className="mb-1 text-lg">Use Case</p>
++                    <div className="flex flex-wrap gap-3 text-lg">
++                      {useCaseOptions.map((option) => (
++                        <label key={option}>
++                          <input
++                            type="checkbox"
++                            checked={value.includes(option)}
++                            onChange={(e) => {
++                              setQuoteForm((prev) => ({
++                                ...prev,
++                                useCases: e.target.checked
++                                  ? [...prev.useCases, option]
++                                  : prev.useCases.filter((v) => v !== option)
++                              }));
++                            }}
++                          /> {option}
++                        </label>
++                      ))}
++                    </div>
++                  </div>
++                );
++              }
++              if (key === "notes") {
++                return (
++                  <textarea
++                    key={key}
++                    value={value}
++                    onChange={(e) => setQuoteForm((p) => ({ ...p, [key]: e.target.value }))}
++                    placeholder="Tell us about your printing/branding needs, delivery timelines, etc."
++                    className="sm:col-span-2 rounded border px-3 py-2 text-lg"
++                  />
++                );
++              }
++              return (
++                <input
++                  key={key}
++                  value={value}
++                  onChange={(e) => setQuoteForm((p) => ({ ...p, [key]: e.target.value }))}
++                  placeholder={key}
++                  className="rounded border px-3 py-2 text-lg"
++                />
++              );
++            })}
++            <button className="sm:col-span-2 ml-auto rounded-lg bg-[#149e6a] px-6 py-2 text-xl font-bold text-white">Submit Inquiry</button>
++          </form>
++        </div>
++      </section>
++    </main>
++  );
++};
++
++export default Home;
+diff --git a/src/styles/index.css b/src/styles/index.css
+new file mode 100644
+index 0000000000000000000000000000000000000000..fc69a8fb291cc501f9ce8d752b343d347d03e64b
+--- /dev/null
++++ b/src/styles/index.css
+@@ -0,0 +1,32 @@
++@tailwind base;
++@tailwind components;
++@tailwind utilities;
++
++:root {
++  color-scheme: light;
++}
++
++html {
++  scroll-behavior: smooth;
++}
++
++body {
++  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
++  margin: 0;
++  background: #f7fbf8;
++}
++
++.section-padding {
++  padding: 4rem 1.25rem;
++}
++
++.container-width {
++  margin: 0 auto;
++  width: 100%;
++  max-width: 72rem;
++}
++
++.gradient-hero {
++  background: radial-gradient(circle at top left, rgba(165, 230, 185, 0.35), transparent 60%),
++    linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(233, 247, 239, 0.9));
++}
+diff --git a/tailwind.config.js b/tailwind.config.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..ef5552a92c970b1f2802d743ab98e7a3a7e55ef2
+--- /dev/null
++++ b/tailwind.config.js
+@@ -0,0 +1,5 @@
++export default {
++  content: ["./index.html", "./src/**/*.{js,jsx}"],
++  theme: { extend: {} },
++  plugins: []
++};
+diff --git a/tools/check-all.mjs b/tools/check-all.mjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..72f8e7f753048a565676d25a784fbf6052650d3a
+--- /dev/null
++++ b/tools/check-all.mjs
+@@ -0,0 +1,72 @@
++import { spawn } from "node:child_process";
++
++const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
++
++const requestJson = async (url, init = {}) => {
++  const res = await fetch(url, init);
++  let data = null;
++  try {
++    data = await res.json();
++  } catch {
++    data = null;
++  }
++  return { ok: res.ok, status: res.status, data };
++};
++
++const waitForApi = async (retries = 20) => {
++  for (let i = 0; i < retries; i += 1) {
++    try {
++      const res = await fetch("http://127.0.0.1:5001/api/health");
++      if (res.ok) return true;
++    } catch {
++      // ignore while waiting
++    }
++    await sleep(500);
++  }
++  return false;
++};
++
++const server = spawn("node", ["server/index.js"], {
++  stdio: ["ignore", "pipe", "pipe"]
++});
++
++server.stdout.on("data", (b) => process.stdout.write(`[server] ${b}`));
++server.stderr.on("data", (b) => process.stderr.write(`[server] ${b}`));
++
++try {
++  const apiReady = await waitForApi();
++  if (!apiReady) {
++    console.error("❌ API did not start in time.");
++    process.exitCode = 1;
++  } else {
++    const health = await requestJson("http://127.0.0.1:5001/api/health");
++    if (!health.ok || !health.data?.ok) {
++      console.error(`❌ API health check failed (${health.status}).`);
++      process.exitCode = 1;
++    } else {
++      const login = await requestJson("http://127.0.0.1:5001/api/auth/login", {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ email: "admin@econirva.com", password: "admin123" })
++      });
++
++      if (!login.ok || !login.data?.token) {
++        console.error(`❌ Admin login failed (${login.status}).`);
++        process.exitCode = 1;
++      } else {
++        const products = await requestJson("http://127.0.0.1:5001/api/admin/products", {
++          headers: { Authorization: `Bearer ${login.data.token}` }
++        });
++
++        if (!products.ok || !Array.isArray(products.data)) {
++          console.error(`❌ Admin products fetch failed (${products.status}).`);
++          process.exitCode = 1;
++        } else {
++          console.log(`✅ API checks passed. Products loaded: ${products.data.length}`);
++        }
++      }
++    }
++  }
++} finally {
++  server.kill("SIGTERM");
++}
+diff --git a/tools/run-all.mjs b/tools/run-all.mjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..704d1153e6ca6cd84c2abfff7ae73545a6f78d37
+--- /dev/null
++++ b/tools/run-all.mjs
+@@ -0,0 +1,36 @@
++import { spawn } from "node:child_process";
++
++const procs = [];
++
++const start = (name, command, args) => {
++  const child = spawn(command, args, {
++    stdio: ["inherit", "pipe", "pipe"],
++    shell: process.platform === "win32"
++  });
++
++  child.stdout.on("data", (buf) => process.stdout.write(`[${name}] ${buf}`));
++  child.stderr.on("data", (buf) => process.stderr.write(`[${name}] ${buf}`));
++
++  child.on("exit", (code) => {
++    process.stdout.write(`\n[${name}] exited with code ${code}\n`);
++    shutdown();
++  });
++
++  procs.push(child);
++};
++
++const shutdown = () => {
++  while (procs.length) {
++    const p = procs.pop();
++    if (!p.killed) p.kill("SIGTERM");
++  }
++};
++
++process.on("SIGINT", shutdown);
++process.on("SIGTERM", shutdown);
++
++start("server", "npm", ["run", "server"]);
++start("frontend", "npm", ["run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]);
++
++process.stdout.write("\nStarted backend + frontend together.\n");
++process.stdout.write("Website: http://localhost:5173\nAdmin:   http://localhost:5173/admin\nAPI:     http://localhost:5001\n\n");
+diff --git a/vite.config.js b/vite.config.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..db1b19eebb5893543db2d9d2515acc12189024d3
+--- /dev/null
++++ b/vite.config.js
+@@ -0,0 +1,6 @@
++import { defineConfig } from "vite";
++import react from "@vitejs/plugin-react";
++
++export default defineConfig({
++  plugins: [react()]
++});
+ 
+EOF
+)
