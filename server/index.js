@@ -215,6 +215,18 @@ const server = http.createServer(async (req, res) => {
   const pathname = parseUrl(req.url).pathname;
   const user = getAuthUser(req, db);
 
+  if (pathname === "/" && req.method === "GET") {
+    return send(res, 200, {
+      service: "Econirva API",
+      message: "API server is running. Use frontend URL (port 5173) for website/admin UI.",
+      endpoints: ["/api/health", "/api/products", "/api/auth/login"]
+    });
+  }
+
+  if (pathname === "/api/health" && req.method === "GET") {
+    return send(res, 200, { ok: true, service: "api", time: nowIso() });
+  }
+
   if (pathname === "/api/auth/login" && req.method === "POST") {
     const body = await parseBody(req);
     const found = db.users.find((u) => u.email?.toLowerCase() === String(body.email || "").toLowerCase());

@@ -9,6 +9,15 @@ Frontend runs with Vite (React).
 - Open `/` for website
 - Open `/admin` for admin panel
 
+## Codespaces/Cloud URL troubleshooting (important)
+- **Frontend UI is on port `5173`**:
+  - open the forwarded URL for `5173` to see Home page
+  - open `.../admin` on the same `5173` URL for admin login
+- **Port `5001` is API only**:
+  - opening `5001` root shows API status JSON
+  - use API paths like `/api/health`, `/api/products`
+- If you open `5001` expecting website, you will not see the React UI.
+
 ## Run everything at once
 - Start frontend + backend together:
   - `npm run run:all`
