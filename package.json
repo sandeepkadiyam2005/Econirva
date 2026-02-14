@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "server": "node server/index.js"
+    "server": "node server/index.js",
+    "run:all": "node tools/run-all.mjs",
+    "check:all": "node tools/check-all.mjs"
   },
   "dependencies": {
     "react": "^18.2.0",

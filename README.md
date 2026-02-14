@@ -9,6 +9,22 @@ Frontend runs with Vite (React).
 - Open `/` for website
 - Open `/admin` for admin panel
 
+## Run everything at once
+- Start frontend + backend together:
+  - `npm run run:all`
+- Then open:
+  - Website: `http://localhost:5173`
+  - Admin: `http://localhost:5173/admin`
+
+## Check everything is working (single command)
+- Run API smoke checks automatically:
+  - `npm run check:all`
+- This command will:
+  - start backend server temporarily
+  - test admin login
+  - test admin products endpoint
+  - print pass/fail output
+
 ## Backend API
 Run:
 - `npm run server`
