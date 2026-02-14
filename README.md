@@ -36,6 +36,11 @@ Base URL: `http://localhost:5001`
 - Admin APIs are role-protected and return `403 Forbidden` for non-company roles.
 
 
+## Database
+- Backend now uses **SQLite** database at `server/data/econirva.sqlite`.
+- All user types (`admin`, `sales`, `viewer`, `financer`, `user`) and workflow data are persisted in DB state.
+- Existing `server/data/db.json` is used only as initial seed for first run.
+
 ## New workflow features added
 - Password change endpoint for all logged-in users: `POST /api/auth/change-password`.
 - Admin password reset for team accounts: `POST /api/admin/users/:id/reset-password` (admin only).

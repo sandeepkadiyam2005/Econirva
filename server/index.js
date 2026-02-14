@@ -3,18 +3,69 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
+import { DatabaseSync } from "node:sqlite";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const dbPath = path.join(__dirname, "data", "db.json");
+const jsonSeedPath = path.join(__dirname, "data", "db.json");
+const sqlitePath = path.join(__dirname, "data", "econirva.sqlite");
 
 const JWT_SECRET = process.env.JWT_SECRET || "econirva-dev-secret";
 const TOKEN_TTL_SECONDS = 60 * 60 * 8;
 const ORDER_FLOW = ["new", "approved", "production", "shipped", "delivered"];
 const COMPANY_ROLES = ["admin", "sales", "viewer", "financer"];
 
-const readDb = () => JSON.parse(fs.readFileSync(dbPath, "utf8"));
-const writeDb = (db) => fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+const dbConn = new DatabaseSync(sqlitePath);
+dbConn.exec(`
+  CREATE TABLE IF NOT EXISTS app_state (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )
+`);
+
+const defaultState = {
+  users: [],
+  products: [],
+  orders: [],
+  quotes: [],
+  media: [],
+  notifications: [],
+  financeRecords: [],
+  paymentOptions: [],
+  salesConcerns: [],
+  financeIssues: []
+};
+
+const loadSeedState = () => {
+  if (fs.existsSync(jsonSeedPath)) {
+    try {
+      return JSON.parse(fs.readFileSync(jsonSeedPath, "utf8"));
+    } catch {
+      return { ...defaultState };
+    }
+  }
+  return { ...defaultState };
+};
+
+const ensureDbState = () => {
+  const existing = dbConn.prepare("SELECT value FROM app_state WHERE key = ?").get("main");
+  if (!existing) {
+    const seed = loadSeedState();
+    dbConn.prepare("INSERT INTO app_state (key, value, updated_at) VALUES (?, ?, ?)").run("main", JSON.stringify(seed), new Date().toISOString());
+  }
+};
+
+const readDb = () => {
+  ensureDbState();
+  const row = dbConn.prepare("SELECT value FROM app_state WHERE key = ?").get("main");
+  return row?.value ? JSON.parse(row.value) : { ...defaultState };
+};
+
+const writeDb = (db) => {
+  ensureDbState();
+  dbConn.prepare("UPDATE app_state SET value = ?, updated_at = ? WHERE key = ?").run(JSON.stringify(db), new Date().toISOString(), "main");
+};
 
 const b64url = (value) => Buffer.from(value).toString("base64url");
 const fromB64urlJson = (value) => JSON.parse(Buffer.from(value, "base64url").toString("utf8"));
@@ -63,14 +114,14 @@ const bootstrapDb = () => {
     return user;
   });
 
-  db.orders = db.orders || [];
-  db.quotes = db.quotes || [];
-  db.media = db.media || [];
-  db.notifications = db.notifications || [];
-  db.financeRecords = db.financeRecords || [];
-  db.paymentOptions = db.paymentOptions || [];
-  db.salesConcerns = db.salesConcerns || [];
-  db.financeIssues = db.financeIssues || [];
+  if (!db.orders) { db.orders = []; changed = true; }
+  if (!db.quotes) { db.quotes = []; changed = true; }
+  if (!db.media) { db.media = []; changed = true; }
+  if (!db.notifications) { db.notifications = []; changed = true; }
+  if (!db.financeRecords) { db.financeRecords = []; changed = true; }
+  if (!db.paymentOptions) { db.paymentOptions = []; changed = true; }
+  if (!db.salesConcerns) { db.salesConcerns = []; changed = true; }
+  if (!db.financeIssues) { db.financeIssues = []; changed = true; }
 
   if (changed) writeDb(db);
 };
