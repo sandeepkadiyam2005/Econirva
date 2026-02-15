@@ -1,129 +1,111 @@
 # ECONIRVA Global Industrial SaaS Backend
 
-ECONIRVA is now structured as a **multi-tenant, globally scalable, AI-enabled industrial SaaS platform** for:
-- Manufacturing companies
-- Wholesale distributors
-- Retail chains
-- Export businesses
-- Multi-country operations
+Production-ready backend foundation for a multi-tenant industrial SaaS platform using:
+- **PostgreSQL + Prisma**
+- **Structured Express architecture**
+- **JWT authentication**
+- **Docker deployment**
+- **Cloud hosting readiness**
+- **Secure file storage (local/S3)**
 
-This backend provides the foundation for Phases 29–38.
-
-## Core Architecture Delivered
-
-- **Multi-tenant isolation** using `Tenant` + tenant-scoped relations.
-- **Subdomain/header tenant resolution** (`company.econirva.com` or `x-tenant-id`).
-- **Subscription plans**: Basic / Pro / Enterprise.
-- **Feature-based access control** with tenant feature flags.
-- **Usage tracking + billing invoice records**.
-- **Globalization base**: i18n locales, multi-currency, tax and region pricing engine.
-- **Traceability base** for material origin + digital certification hash.
-- **ESG and investor dashboards** data layer.
-- **AI forecast endpoint** for demand/reorder/churn foundation.
-- **Enterprise security middleware** (JWT + tenant checks + role checks + audit logs).
-- **Event-driven foundation** with publish/subscribe abstraction (in-memory now; Kafka/RabbitMQ-ready).
-
-## Project Structure
+## Architecture
 
 ```text
 server/
- ├── config/
- │    └── database.js
- ├── controllers/
- ├── routes/
- ├── models/
- │    └── prisma/
- ├── middleware/
- ├── services/
- ├── utils/
- ├── uploads/
- ├── migrations/
- ├── index.js
- └── .env.example
+ ├── config/          # env + db config
+ ├── controllers/     # HTTP controllers
+ ├── middleware/      # auth, tenant, roles, feature flags, errors
+ ├── models/prisma/   # PostgreSQL schema
+ ├── routes/          # API route maps
+ ├── services/        # business logic
+ ├── utils/           # shared utilities
+ ├── uploads/         # local file fallback
+ └── index.js         # app bootstrap
 ```
 
-## Quick Start
+## Core Capabilities
 
-1. Install dependencies
+- Multi-tenant context resolution (subdomain/header)
+- Tenant-isolated data access patterns
+- JWT auth with role + feature authorization
+- Product / Order / Customer APIs
+- Platform APIs (plans, billing, localization, ESG, AI, traceability)
+- Usage tracking + audit logs
+- Event-driven hooks for order lifecycle
+
+## PostgreSQL + Prisma
+
+1. Set env (`server/.env`):
+   - `DATABASE_URL=postgresql://username:password@localhost:5432/econirva`
+2. Generate Prisma client:
    ```bash
-   npm install
+   npm run prisma:generate
    ```
-2. Copy env file
+3. Run migrations:
    ```bash
-   cp server/.env.example .env
+   npm run prisma:migrate
    ```
-3. Configure PostgreSQL and secrets in `.env`.
 
-## Prisma
-
-Schema path:
-- `server/models/prisma/schema.prisma`
-
-Run:
-```bash
-npm run prisma:generate
-npm run prisma:migrate
-```
-
-## Run API
+## Run Locally
 
 ```bash
+npm install
 npm run server
 ```
 
-Health:
-- `GET /health`
+## Docker Deployment
 
-## Key Endpoints
+### Start with Docker Compose
+```bash
+docker compose up --build
+```
 
-### Auth
-- `POST /auth/signup`
-- `POST /auth/login`
+Services:
+- PostgreSQL on `localhost:5432`
+- API on `localhost:5001`
 
-### Core ERP
-- `GET /products`
-- `GET /products/:id`
-- `POST /products`
-- `PUT /products/:id`
-- `DELETE /products/:id`
+### Files
+- `Dockerfile`
+- `docker-compose.yml`
+- `.dockerignore`
 
-- `POST /orders`
-- `GET /orders`
-- `GET /orders/:id`
-- `PUT /orders/:id/status`
+## Cloud Hosting Guidance
 
-- `GET /customers`
-- `GET /customers/:id`
+Recommended deployment:
+- **API**: AWS ECS/Fargate, GCP Cloud Run, Azure Container Apps, or Render/Railway
+- **Database**: AWS RDS PostgreSQL / Cloud SQL / Azure Database for PostgreSQL
+- **File storage**: S3-compatible object storage
 
-### Platform SaaS
-- `GET /platform/plans`
-- `POST /platform/tenants`
-- `GET /platform/tenant/context`
-- `GET /platform/localization/options`
-- `POST /platform/tax/estimate`
-- `GET /platform/billing/invoices`
-- `POST /platform/billing/invoices`
-- `POST /platform/traceability/material-batches`
-- `POST /platform/traceability/certificates`
-- `GET /platform/esg/dashboard`
-- `GET /platform/investor/dashboard`
-- `POST /platform/ai/forecast`
+Set `STORAGE_PROVIDER=s3` and configure:
+- `AWS_REGION`
+- `AWS_S3_BUCKET`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- Optional: `AWS_S3_ENDPOINT`, `AWS_S3_PUBLIC_URL`
 
-## Security Enhancements
+## Secure File Storage
+
+Upload flow supports:
+- **Local secure fallback** (`STORAGE_PROVIDER=local`)
+- **S3 secure object storage** (`STORAGE_PROVIDER=s3`)
+
+Security controls:
+- MIME/type validation
+- 5MB max upload size
+- Server-side encryption for S3 (`S3_SERVER_SIDE_ENCRYPTION`, default `AES256`)
+- Tenant-segmented object keys (`tenants/{tenantId}/orders/...`)
+
+## Security Stack
 
 - Helmet
 - CORS
 - Rate limiting
-- bcrypt hashing (12 rounds)
-- JWT expiry (`8h`)
-- Tenant-aware token validation
-- Audit log structure (SOC2-oriented)
-- OIDC/SSO env placeholders for Google/Microsoft
+- bcrypt password hashing
+- JWT expiry
+- Tenant/token mismatch prevention
+- Audit logging middleware
 
-## Deployment Direction (next implementation phases)
+## Important Env Files
 
-- External message broker (Kafka/RabbitMQ)
-- Kubernetes manifests + autoscaling
-- Multi-region deployment strategy + DR playbooks
-- White-label custom domains and theme engine
-- Dedicated AI model services and MLOps pipeline
+- `server/.env.example` → template
+- `server/.env` → runtime values (already added)

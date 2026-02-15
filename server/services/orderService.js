@@ -1,7 +1,12 @@
 import { prisma } from '../config/database.js';
 import { publishEvent } from './eventService.js';
+import { uploadFile } from './storageService.js';
 
-const buildLogoUrl = (req, fileName) => `${req.protocol}://${req.get('host')}/uploads/${fileName}`;
+const toAbsoluteUrl = (req, url) => {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `${req.protocol}://${req.get('host')}${url}`;
+};
 
 export const createOrder = async (req) => {
   const { customerName, customerEmail, customerId, items = [], currency = 'USD' } = req.body;
@@ -24,6 +29,8 @@ export const createOrder = async (req) => {
     return total + Number(product.price) * Number(item.quantity);
   }, 0);
 
+  const uploadResult = await uploadFile({ tenantId: req.tenant.id, file: req.file });
+
   const createdOrder = await prisma.order.create({
     data: {
       tenantId: req.tenant.id,
@@ -32,7 +39,7 @@ export const createOrder = async (req) => {
       customerEmail,
       totalPrice,
       currency,
-      logoUrl: req.file ? buildLogoUrl(req, req.file.filename) : null,
+      logoUrl: toAbsoluteUrl(req, uploadResult?.url),
       orderItems: {
         create: items.map((item) => ({
           productId: item.productId,
