@@ -1,340 +1,136 @@
-import { useMemo, useState } from "react";
-import products from "../data/products.js";
+import { useMemo, useState } from 'react';
 
-const api = "http://127.0.0.1:5001";
-
-const useCaseOptions = ["Restaurant", "Sweet Shop", "Pharmacy", "Supermarket", "Boutique"];
-
-const productCards = [
-  ...products,
-  {
-    id: 4,
-    title: "Garbage Bio-Medical Bags",
-    description: "Leak-resistant disposal bags with standards-compliant quality for clinical use."
-  }
-];
+const whatsappNumber = '919999999999';
 
 const Home = () => {
-  const [estimateForm, setEstimateForm] = useState({
-    productType: "Carry Bag",
-    size: "12x16",
-    quality: "Standard",
-    color: "Plain White",
-    printingColors: "None",
-    quantity: 1000
+  const [estimator, setEstimator] = useState({
+    bagType: 'Compostable Carry Bag',
+    quantity: 5000,
+    printingColors: 2,
+    thickness: 'Standard',
   });
-
+  const [color, setColor] = useState('#0f9f6b');
   const [orderForm, setOrderForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    company: "",
-    product: "",
-    size: "",
-    quality: "",
-    color: "",
-    printingColors: "",
-    quantity: "",
-    address: "",
-    notes: ""
+    name: '',
+    company: '',
+    email: '',
+    phone: '',
+    notes: '',
   });
+  const [artwork, setArtwork] = useState(null);
 
-  const [quoteForm, setQuoteForm] = useState({
-    name: "",
-    company: "",
-    email: "",
-    phone: "",
-    productType: "",
-    size: "",
-    color: "",
-    quantity: "",
-    useCases: [],
-    logoUrl: "",
-    notes: ""
-  });
+  const estimatedPrice = useMemo(() => {
+    const base = estimator.bagType.includes('Garbage') ? 6.5 : 4.5;
+    const colorFactor = 1 + Number(estimator.printingColors) * 0.06;
+    const thicknessFactor = estimator.thickness === 'Premium' ? 1.2 : 1;
+    return Math.round(base * Number(estimator.quantity || 0) * colorFactor * thicknessFactor);
+  }, [estimator]);
 
-  const estimateValue = useMemo(() => {
-    const base = estimateForm.productType === "Carry Bag" ? 6 : 8;
-    const qualityMul = estimateForm.quality === "High-strength" ? 1.3 : 1;
-    const printMul = estimateForm.printingColors === "None" ? 1 : 1.15;
-    const colorMul = estimateForm.color === "Plain White" ? 1 : 1.1;
-    return Math.round(base * qualityMul * printMul * colorMul * Number(estimateForm.quantity || 0));
-  }, [estimateForm]);
-
-  const sendOrder = async (event) => {
+  const handleOrderSubmit = (event) => {
     event.preventDefault();
-    await fetch(`${api}/api/orders`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        customerName: orderForm.name,
-        email: orderForm.email,
-        phone: orderForm.phone,
-        productTitle: orderForm.product,
-        qty: Number(orderForm.quantity || 0),
-        customization: `${orderForm.quality || ""}, ${orderForm.color || ""}, ${orderForm.printingColors || ""}`,
-        deliveryAddress: orderForm.address,
-        notes: `${orderForm.company || ""} | ${orderForm.notes || ""}`,
-        orderValue: estimateValue,
-        paymentMethod: "advance",
-        advancePercent: 20
-      })
-    });
-    alert("Order placed. Company team will confirm shortly.");
-    setOrderForm({
-      name: "",
-      email: "",
-      phone: "",
-      company: "",
-      product: "",
-      size: "",
-      quality: "",
-      color: "",
-      printingColors: "",
-      quantity: "",
-      address: "",
-      notes: ""
-    });
+    alert(`Bulk enquiry submitted for ${orderForm.company || orderForm.name}. Our B2B team will contact you shortly.`);
+    setOrderForm({ name: '', company: '', email: '', phone: '', notes: '' });
+    setArtwork(null);
   };
 
-  const sendQuote = async (event) => {
-    event.preventDefault();
-    await fetch(`${api}/api/quotes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        customerName: quoteForm.name,
-        email: quoteForm.email,
-        notes: `${quoteForm.company} | ${quoteForm.phone} | ${quoteForm.productType} | ${quoteForm.size} | ${quoteForm.color} | ${quoteForm.quantity} | ${quoteForm.useCases.join(",")} | ${quoteForm.logoUrl} | ${quoteForm.notes}`
-      })
-    });
-    alert("Quote request submitted.");
-    setQuoteForm({
-      name: "",
-      company: "",
-      email: "",
-      phone: "",
-      productType: "",
-      size: "",
-      color: "",
-      quantity: "",
-      useCases: [],
-      logoUrl: "",
-      notes: ""
-    });
-  };
+  const whatsappMessage = encodeURIComponent(
+    `Hello ECONIRVA, we need a bulk order estimate. Product: ${estimator.bagType}, Qty: ${estimator.quantity}, Budget: ₹${estimatedPrice}`
+  );
 
   return (
-    <main className="bg-[#d9e6e2] text-[#1c2f52]">
-      <section className="bg-[#0d714b] px-6 pb-16 pt-3 text-white lg:px-20">
-        <div className="mx-auto max-w-6xl">
-          <nav className="rounded-full bg-[#dce8e4] px-5 py-3 text-[#16334e] shadow">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img src="/images/econirva-logo.svg" alt="logo" className="h-10 w-10 rounded-full bg-white p-1" />
-                <div>
-                  <p className="text-2xl font-extrabold leading-none">ECONIRVA</p>
-                  <p className="text-xs font-semibold">BIO SOLUTIONS</p>
-                </div>
+    <main className="min-h-screen bg-slate-950 text-slate-100">
+      <section className="mx-auto max-w-7xl px-6 pb-16 pt-8 lg:px-10">
+        <header className="rounded-2xl border border-emerald-500/30 bg-slate-900/70 p-5 backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-emerald-300">ECONIRVA Bio Solutions</p>
+              <h1 className="mt-2 text-3xl font-black lg:text-5xl">Premium Compostable Packaging for Global B2B Supply Chains</h1>
+            </div>
+            <a
+              className="rounded-xl bg-emerald-500 px-5 py-3 font-bold text-slate-950"
+              href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              WhatsApp Sales
+            </a>
+          </div>
+        </header>
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          <section className="rounded-2xl border border-slate-700 bg-slate-900 p-6">
+            <h2 className="text-2xl font-bold">Smart Price Estimator</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <select
+                value={estimator.bagType}
+                onChange={(e) => setEstimator((p) => ({ ...p, bagType: e.target.value }))}
+                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
+              >
+                <option>Compostable Carry Bag</option>
+                <option>Retail T-Shirt Bag</option>
+                <option>Garbage Compostable Bag</option>
+              </select>
+              <input
+                type="number"
+                value={estimator.quantity}
+                onChange={(e) => setEstimator((p) => ({ ...p, quantity: e.target.value }))}
+                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
+                placeholder="Quantity"
+              />
+              <input
+                type="number"
+                min="0"
+                max="8"
+                value={estimator.printingColors}
+                onChange={(e) => setEstimator((p) => ({ ...p, printingColors: e.target.value }))}
+                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
+                placeholder="Printing Colors"
+              />
+              <select
+                value={estimator.thickness}
+                onChange={(e) => setEstimator((p) => ({ ...p, thickness: e.target.value }))}
+                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"
+              >
+                <option>Standard</option>
+                <option>Premium</option>
+              </select>
+            </div>
+            <p className="mt-4 text-xl font-extrabold text-emerald-300">Estimated Bulk Budget: ₹{estimatedPrice.toLocaleString('en-IN')}</p>
+          </section>
+
+          <section className="rounded-2xl border border-slate-700 bg-slate-900 p-6">
+            <h2 className="text-2xl font-bold">Custom Color Tool</h2>
+            <p className="mt-2 text-slate-300">Preview brand color application for your compostable bag lineup.</p>
+            <div className="mt-4 flex items-center gap-4">
+              <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-12 w-16 rounded" />
+              <div className="rounded-xl border border-slate-700 p-4">
+                <div className="h-24 w-40 rounded-lg shadow-lg" style={{ backgroundColor: color }} />
+                <p className="mt-2 text-xs text-slate-400">Selected: {color}</p>
               </div>
-              <div className="hidden gap-8 text-lg md:flex">
-                <a href="#products">Products</a>
-                <a href="#colors">Colors</a>
-                <a href="#estimate">Estimate</a>
-                <a href="#order">Order</a>
-                <a href="#quote">Quote</a>
-              </div>
             </div>
-          </nav>
+          </section>
+        </div>
 
-          <div className="mt-10 max-w-3xl">
-            <span className="inline-block rounded-full bg-[#2b8f6d] px-4 py-1 text-sm font-semibold">🌿 Engineered for Nature</span>
-            <h1 className="mt-4 text-6xl font-black leading-tight">Go Green with ECONIRVA Bio Solutions</h1>
-            <p className="mt-4 text-3xl text-[#dcf4ea]">Manufacturer of 100% Biodegradable & Compostable Carry Bags, Pouches & Trash Bags. Bulk & Custom Orders Welcome.</p>
-            <div className="mt-4 flex flex-wrap gap-2 text-sm font-semibold">
-              {[
-                "Eco-friendly",
-                "Durable",
-                "Non-toxic",
-                "100% Compostable"
-              ].map((chip) => (
-                <span key={chip} className="rounded-full bg-[#178c63] px-3 py-1">{chip}</span>
-              ))}
+        <section className="mt-8 rounded-2xl border border-slate-700 bg-slate-900 p-6">
+          <h2 className="text-2xl font-bold">Bulk Order Intake + Artwork Upload</h2>
+          <form onSubmit={handleOrderSubmit} className="mt-4 grid gap-3 sm:grid-cols-2">
+            <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" placeholder="Contact Name" value={orderForm.name} onChange={(e) => setOrderForm((p) => ({ ...p, name: e.target.value }))} required />
+            <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" placeholder="Company" value={orderForm.company} onChange={(e) => setOrderForm((p) => ({ ...p, company: e.target.value }))} required />
+            <input type="email" className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" placeholder="Email" value={orderForm.email} onChange={(e) => setOrderForm((p) => ({ ...p, email: e.target.value }))} required />
+            <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" placeholder="Phone" value={orderForm.phone} onChange={(e) => setOrderForm((p) => ({ ...p, phone: e.target.value }))} required />
+            <input
+              type="file"
+              accept=".png,.jpg,.jpeg,.svg,.pdf"
+              className="rounded-lg border border-dashed border-slate-600 bg-slate-950 px-3 py-2"
+              onChange={(e) => setArtwork(e.target.files?.[0] || null)}
+            />
+            <input className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2" placeholder="Notes" value={orderForm.notes} onChange={(e) => setOrderForm((p) => ({ ...p, notes: e.target.value }))} />
+            <div className="sm:col-span-2 flex items-center justify-between">
+              <p className="text-sm text-slate-400">{artwork ? `Selected file: ${artwork.name}` : 'Upload logo/artwork for custom printing.'}</p>
+              <button className="rounded-xl bg-emerald-500 px-5 py-2 font-bold text-slate-950">Submit Inquiry</button>
             </div>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <a href="#order" className="rounded-lg bg-white px-6 py-3 font-bold text-[#0d714b]">Order Now</a>
-              <a href="#quote" className="rounded-lg bg-[#169667] px-6 py-3 font-bold">Request a Quote</a>
-              <a href="#estimate" className="rounded-lg bg-[#169667] px-6 py-3 font-bold">Instant Estimate</a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="products" className="mx-auto -mt-8 max-w-6xl rounded-full bg-[#ccecdf] px-6 py-4 text-center shadow md:w-fit">
-        <div className="flex gap-8 text-lg font-semibold text-[#0f6d49]">
-          <a href="#products">Products</a>
-          <a href="#colors">Colors</a>
-          <a href="#estimate">Estimate</a>
-          <a href="#order">Order</a>
-          <a href="#quote">Quote</a>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-6 py-12 lg:px-0">
-        <h2 className="text-center text-6xl font-black">Our Product Range</h2>
-        <p className="mx-auto mt-4 max-w-4xl text-center text-3xl text-slate-600">
-          Available in plain white or custom colors. Printing & branding customized as per your business needs and logos.
-        </p>
-        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {productCards.map((product) => (
-            <article key={product.id} className="rounded-3xl border border-slate-300 bg-[#e7eceb] p-5 shadow-sm">
-              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#d4e4dc] text-3xl">🔒</div>
-              <h3 className="text-4xl font-extrabold leading-tight">{product.title}</h3>
-              <p className="mt-2 text-2xl text-slate-600">{product.description}</p>
-              <div className="mt-4 flex flex-wrap gap-2 text-xl font-semibold text-slate-600">
-                <span className="rounded bg-[#dde2e6] px-2 py-1">Standard</span>
-                <span className="rounded bg-[#dde2e6] px-2 py-1">High-strength</span>
-                <span className="rounded bg-[#dde2e6] px-2 py-1">Custom Sizes</span>
-              </div>
-            </article>
-          ))}
-        </div>
-        <p className="mt-6 text-center text-xl text-slate-600">Ideal for Restaurants • Sweet Shops • Pharmacies • Supermarkets • Boutiques</p>
-      </section>
-
-      <section id="colors" className="bg-[#cfe1db] py-14">
-        <div className="mx-auto grid max-w-6xl gap-8 px-6 lg:grid-cols-2 lg:px-0">
-          <div>
-            <h2 className="text-5xl font-black">Custom Colors & Branding</h2>
-            <p className="mt-3 text-2xl text-slate-600">Choose from a wide range of color styles. Home-use friendly light colors and bold brand colors are available.</p>
-            <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-600">
-              <li>Light pastel colors ideal for home use</li>
-              <li>Bright retail palettes for supermarkets and boutiques</li>
-              <li>One- to four-color printing options</li>
-              <li>Brand logo + custom text printing support</li>
-            </ul>
-          </div>
-          <div className="rounded-2xl bg-white p-5 shadow">
-            <p className="text-lg font-semibold text-slate-500">Home Light / Retail Bright / Pastel / Bold</p>
-            <div className="mt-4 grid grid-cols-6 gap-3">
-              {["#9DD7B6", "#A9C9E2", "#DAB9C6", "#1CA35F", "#F0A500", "#3B7DE3", "#E0B7D6", "#A9D98F", "#95CBE5", "#1F2F4A", "#E51D48", "#6D2BCF"].map((color) => (
-                <span key={color} className="h-12 rounded-xl" style={{ background: color }} />
-              ))}
-            </div>
-            <p className="mt-4 text-lg text-slate-500">Tell us your preferred palette and we'll customize the color and printing to your brand.</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="estimate" className="mx-auto max-w-6xl px-6 py-14 lg:px-0">
-        <h2 className="text-center text-5xl font-black">Instant Price Estimator</h2>
-        <p className="mt-2 text-center text-xl text-slate-600">Get an approximate price for your order. Final quote depends on material, thickness and design.</p>
-        <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          <div className="rounded-2xl bg-white p-4 shadow">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {Object.keys(estimateForm).map((key) => (
-                <input
-                  key={key}
-                  value={estimateForm[key]}
-                  onChange={(e) => setEstimateForm((p) => ({ ...p, [key]: e.target.value }))}
-                  placeholder={key}
-                  className="rounded border px-3 py-2 text-lg"
-                />
-              ))}
-            </div>
-          </div>
-          <div className="rounded-2xl bg-white p-4 shadow">
-            <p className="text-lg text-slate-500">Approx. unit price: ₹6.00</p>
-            <p className="text-4xl font-black">Estimated total: ₹{estimateValue.toLocaleString("en-IN")}</p>
-            <p className="mt-2 text-lg text-slate-500">Final quote confirmed after artwork and size approval.</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="order" className="mx-auto max-w-6xl px-6 py-4 lg:px-0">
-        <div className="rounded-2xl bg-white p-6 shadow">
-          <h2 className="text-center text-5xl font-black">Order Now</h2>
-          <p className="text-center text-xl text-slate-500">Place a direct order and receive a confirmation email.</p>
-          <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={sendOrder}>
-            {Object.keys(orderForm).map((key) => (
-              key === "address" || key === "notes" ? (
-                <textarea
-                  key={key}
-                  value={orderForm[key]}
-                  onChange={(e) => setOrderForm((p) => ({ ...p, [key]: e.target.value }))}
-                  placeholder={key}
-                  className="sm:col-span-2 rounded border px-3 py-2 text-lg"
-                />
-              ) : (
-                <input
-                  key={key}
-                  value={orderForm[key]}
-                  onChange={(e) => setOrderForm((p) => ({ ...p, [key]: e.target.value }))}
-                  placeholder={key}
-                  className="rounded border px-3 py-2 text-lg"
-                />
-              )
-            ))}
-            <button className="sm:col-span-2 ml-auto rounded-lg bg-[#149e6a] px-6 py-2 text-xl font-bold text-white">Place Order</button>
           </form>
-        </div>
-      </section>
-
-      <section id="quote" className="mx-auto max-w-6xl px-6 py-10 lg:px-0">
-        <div className="rounded-2xl bg-white p-6 shadow">
-          <h2 className="text-center text-5xl font-black">Request a Quote</h2>
-          <p className="text-center text-xl text-slate-500">Tell us what you need and we'll get back with pricing and timelines.</p>
-          <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={sendQuote}>
-            {Object.entries(quoteForm).map(([key, value]) => {
-              if (key === "useCases") {
-                return (
-                  <div key={key} className="sm:col-span-2">
-                    <p className="mb-1 text-lg">Use Case</p>
-                    <div className="flex flex-wrap gap-3 text-lg">
-                      {useCaseOptions.map((option) => (
-                        <label key={option}>
-                          <input
-                            type="checkbox"
-                            checked={value.includes(option)}
-                            onChange={(e) => {
-                              setQuoteForm((prev) => ({
-                                ...prev,
-                                useCases: e.target.checked
-                                  ? [...prev.useCases, option]
-                                  : prev.useCases.filter((v) => v !== option)
-                              }));
-                            }}
-                          /> {option}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                );
-              }
-              if (key === "notes") {
-                return (
-                  <textarea
-                    key={key}
-                    value={value}
-                    onChange={(e) => setQuoteForm((p) => ({ ...p, [key]: e.target.value }))}
-                    placeholder="Tell us about your printing/branding needs, delivery timelines, etc."
-                    className="sm:col-span-2 rounded border px-3 py-2 text-lg"
-                  />
-                );
-              }
-              return (
-                <input
-                  key={key}
-                  value={value}
-                  onChange={(e) => setQuoteForm((p) => ({ ...p, [key]: e.target.value }))}
-                  placeholder={key}
-                  className="rounded border px-3 py-2 text-lg"
-                />
-              );
-            })}
-            <button className="sm:col-span-2 ml-auto rounded-lg bg-[#149e6a] px-6 py-2 text-xl font-bold text-white">Submit Inquiry</button>
-          </form>
-        </div>
+        </section>
       </section>
     </main>
   );
