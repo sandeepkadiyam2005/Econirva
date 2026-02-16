@@ -9,6 +9,16 @@ const sustainabilityHighlights = [
   'Plant-based Raw Materials (PLA, Bio Polymers, NFMB)',
 ];
 
+const deliveryOptions = [
+  'Standard Delivery (3–5 days)',
+  'Express Delivery (24–48 hrs)',
+  'Same-Day Local Dispatch',
+  'Scheduled Delivery Window',
+  'Factory Pickup',
+  'Interstate Bulk Logistics',
+  'Export Container Dispatch',
+];
+
 const salesData = [35, 42, 48, 60, 72, 84, 96, 108, 122, 138, 154, 171];
 const orderGrowth = [20, 24, 28, 36, 40, 52, 60, 72, 79, 88, 96, 110];
 const esgImpact = [18, 21, 26, 33, 38, 45, 53, 63, 70, 78, 84, 91];
@@ -30,6 +40,8 @@ const Home = () => {
     activeClients: 342,
   });
   const [uploadedPreview, setUploadedPreview] = useState(null);
+  const [selectedDelivery, setSelectedDelivery] = useState(deliveryOptions[0]);
+  const [selectedSupport, setSelectedSupport] = useState([]);
 
   const summary = useMemo(
     () => `${Math.round(widgets.monthlyProduction / 1000)}k units / ${widgets.plasticReducedKg.toLocaleString()} kg plastic replaced`,
@@ -42,6 +54,12 @@ const Home = () => {
     const reader = new FileReader();
     reader.onload = () => setUploadedPreview(String(reader.result || ''));
     reader.readAsDataURL(file);
+  };
+
+  const toggleSupportOption = (option) => {
+    setSelectedSupport((prev) =>
+      prev.includes(option) ? prev.filter((item) => item !== option) : [...prev, option]
+    );
   };
 
   return (
@@ -170,12 +188,44 @@ const Home = () => {
           </article>
 
           <article className="glass-card fade-up rounded-3xl p-6" style={{ animationDelay: '340ms' }}>
-            <h2 className="text-xl font-bold text-[#1B5E20]">Uploaded Picture Preview</h2>
-            <p className="mt-2 text-sm text-[#456f4b]">Upload your image and it will be shown here in the page design.</p>
+            <h2 className="text-xl font-bold text-[#1B5E20]">Bulk Order Intake + Artwork Upload</h2>
+            <p className="mt-2 text-sm text-[#456f4b]">Upload your image and choose preferred delivery services for your bulk order.</p>
+
+            <label className="mt-4 block text-xs font-semibold text-[#3d6742]">
+              Primary Delivery Option
+              <select
+                className="mt-1 w-full rounded-lg border border-[#dbe9d5] bg-white/85 px-3 py-2 text-sm"
+                value={selectedDelivery}
+                onChange={(e) => setSelectedDelivery(e.target.value)}
+              >
+                {deliveryOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </label>
+
+            <p className="mt-4 text-xs font-semibold text-[#3d6742]">Add More Delivery Options</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {deliveryOptions.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => toggleSupportOption(option)}
+                  className={`rounded-full border px-3 py-1 text-xs ${
+                    selectedSupport.includes(option)
+                      ? 'border-[#2E7D32] bg-[#2E7D32] text-[#F1F8E9]'
+                      : 'border-[#dbe9d5] bg-white/75 text-[#2f5a35]'
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+
             <input
               type="file"
               accept="image/*"
-              className="mt-3 w-full rounded-lg border border-[#dbe9d5] bg-white/80 px-3 py-2"
+              className="mt-4 w-full rounded-lg border border-[#dbe9d5] bg-white/80 px-3 py-2"
               onChange={onImageUpload}
             />
             <div className="mt-4 overflow-hidden rounded-2xl border border-[#dbe9d5] bg-white/70 p-2">
