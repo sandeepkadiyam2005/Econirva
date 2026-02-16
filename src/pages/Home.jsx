@@ -1,35 +1,12 @@
 import { useMemo, useState } from 'react';
 
-const heroBullets = [
-  '🍴 Restaurants',
-  '🍬 Sweet Shops',
-  '💊 Pharmacies',
-  '🛍 Supermarkets',
-  '👕 Boutiques',
-];
-
-const productRange = [
-  '🛍 Carry Bags – Standard & High-Strength Quality',
-  '👜 D-Cut Bags – Standard & High-Strength Quality',
-  '📏 Sizes: 8×10 to 24×30 inches + Custom Sizes',
-  '📦 Pouches: 5×8 to 13×19 inches + Custom',
-  '🗑 Trash Bags (S–XXL)',
-  '🎨 Custom Colors + Branding Available',
-];
-
+const perfectFor = ['Retail', 'Grocery', 'Food', 'Commercial'];
 const sustainabilityHighlights = [
   '100% Compostable',
   'IS/ISO 17088 Certified',
   'BPA Free',
   '90–120 Days Decomposition',
   'Plant-based Raw Materials (PLA, Bio Polymers, NFMB)',
-];
-
-const kpis = [
-  { label: 'Monthly Compostable Bags Produced', value: '18.4 Lakh' },
-  { label: 'Plastic Reduction (kg)', value: '42,800 kg' },
-  { label: 'Carbon Offset Equivalent', value: '126 tCO₂e' },
-  { label: 'Active Business Clients', value: '342' },
 ];
 
 const salesData = [35, 42, 48, 60, 72, 84, 96, 108, 122, 138, 154, 171];
@@ -52,117 +29,109 @@ const Home = () => {
     carbonOffset: 126,
     activeClients: 342,
   });
+  const [uploadedPreview, setUploadedPreview] = useState(null);
 
   const summary = useMemo(
-    () =>
-      `${Math.round(widgets.monthlyProduction / 1000)}k units / ${widgets.plasticReducedKg.toLocaleString()} kg plastic replaced`,
+    () => `${Math.round(widgets.monthlyProduction / 1000)}k units / ${widgets.plasticReducedKg.toLocaleString()} kg plastic replaced`,
     [widgets]
   );
 
+  const onImageUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setUploadedPreview(String(reader.result || ''));
+    reader.readAsDataURL(file);
+  };
+
   return (
     <main
-      className="relative min-h-screen overflow-hidden text-[#F1F8E9]"
+      className="min-h-screen text-[#1f3a24]"
       style={{
         backgroundImage: "url('/images/bg-home.svg')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
       }}
     >
-      <div className="pointer-events-none absolute inset-0">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <span
-            key={i}
-            className="leaf-particle"
-            style={{
-              left: `${(i * 8) % 92}%`,
-              animationDelay: `${i * 0.9}s`,
-              animationDuration: `${10 + (i % 5)}s`,
-            }}
-          >
-            🍃
-          </span>
-        ))}
-      </div>
+      <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
+        <section className="glass-card fade-up rounded-[32px] p-6 lg:p-8">
+          <div className="mx-auto max-w-4xl text-center">
+            <span className="inline-flex items-center rounded-full bg-[#2E7D32] px-5 py-2 text-xs font-bold tracking-[0.22em] text-[#F1F8E9]">
+              INTRODUCING
+            </span>
+            <img src="/images/econirva-logo.svg" alt="Econirva" className="mx-auto mt-6 h-28 w-28 rounded-full bg-white/70 p-2" />
 
-      <div className="relative mx-auto max-w-7xl px-6 py-10 lg:px-10">
-        <header className="glass-card fade-up rounded-3xl p-7">
-          <p className="text-xs uppercase tracking-[0.35em] text-[#C8A951]">Econirva Bio Solutions Pvt. Ltd.</p>
-          <h1 className="mt-3 text-4xl font-black leading-tight lg:text-6xl">🌿 Go Green with ECONIRVA Bio Solutions!</h1>
-          <p className="mt-4 max-w-4xl text-[#E5F2DA]">
-            ♻ Manufacturer of 100% Biodegradable & Compostable Carry Bags, Pouches & Trash Bags
-          </p>
-          <p className="mt-3 text-sm text-[#D7E9C5]">Ideal for:</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {heroBullets.map((item) => (
-              <span key={item} className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm">
+            <h1 className="mt-6 text-3xl font-black leading-tight text-[#1B5E20] lg:text-5xl">🌿 Go Green with ECONIRVA Bio Solutions!</h1>
+            <p className="mt-3 text-lg font-semibold text-[#2E7D32]">
+              ♻ Manufacturer of 100% Biodegradable & Compostable Carry Bags, Pouches & Trash Bags
+            </p>
+
+            <p className="mt-4 text-base text-[#234a29]">
+              A Step Towards a <span className="font-bold text-[#2E7D32]">Greener</span> & Cleaner Future ♻
+            </p>
+            <p className="mt-3 text-sm text-[#3b6542]">
+              We specialize in manufacturing and supplying high-quality biodegradable and compostable bags that serve
+              today’s needs without harming tomorrow’s world.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              '100% Biodegradable & Compostable',
+              'Eco-friendly & Non-Toxic',
+              'Bulk & Business Ready',
+              'Designed for Greener Future',
+            ].map((item) => (
+              <div key={item} className="card-hover rounded-2xl border border-[#dbe9d5] bg-white/75 px-4 py-3 text-center text-sm font-semibold text-[#24512d]">
                 {item}
-              </span>
+              </div>
             ))}
           </div>
 
-          <div className="mt-7 flex flex-wrap gap-3">
-            <button className="rounded-xl bg-[#2E7D32] px-6 py-3 font-bold text-[#F1F8E9] shadow-lg shadow-[#1B5E20]/40 transition hover:-translate-y-1">
-              Get Started Free
-            </button>
-            <button className="rounded-xl border border-[#C8A951]/60 bg-white/10 px-6 py-3 font-bold text-[#F1F8E9] transition hover:-translate-y-1">
-              View Docs
-            </button>
-          </div>
-        </header>
-
-        <section className="mt-8 grid gap-6 lg:grid-cols-2">
-          <article className="glass-card fade-up rounded-3xl p-6" style={{ animationDelay: '120ms' }}>
-            <h2 className="text-2xl font-bold">Our Product Range</h2>
-            <ul className="mt-4 space-y-2 text-[#E6F2DD]">
-              {productRange.map((item) => (
-                <li key={item} className="rounded-xl border border-white/15 bg-white/5 px-3 py-2">
+          <div className="mt-6 rounded-2xl border border-[#dbe9d5] bg-white/65 p-4">
+            <p className="text-center text-xs font-bold tracking-[0.35em] text-[#2E7D32]">PERFECT FOR</p>
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
+              {perfectFor.map((item) => (
+                <span key={item} className="rounded-full bg-[#2E7D32] px-4 py-2 text-sm font-semibold text-[#F1F8E9]">
                   {item}
-                </li>
-              ))}
-            </ul>
-          </article>
-
-          <article className="glass-card fade-up rounded-3xl p-6" style={{ animationDelay: '220ms' }}>
-            <h2 className="text-2xl font-bold">Sustainability Highlights</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {sustainabilityHighlights.map((item) => (
-                <div key={item} className="rounded-2xl border border-[#C8A951]/35 bg-white/10 p-4">
-                  <p className="font-semibold text-[#F1F8E9]">{item}</p>
-                </div>
+                </span>
               ))}
             </div>
-            <p className="mt-5 text-sm text-[#D9ECCD]">Engineered for Nature 🌿</p>
-          </article>
+          </div>
         </section>
 
-        <section className="mt-8 grid gap-6 lg:grid-cols-2">
-          <article className="glass-card fade-up rounded-3xl p-6" style={{ animationDelay: '280ms' }}>
-            <h2 className="text-2xl font-bold">Sustainability Impact Overview</h2>
-            <p className="mt-2 text-sm text-[#DAECCE]">{summary}</p>
+        <section className="mt-6 grid gap-6 lg:grid-cols-2">
+          <article className="glass-card fade-up rounded-3xl p-6" style={{ animationDelay: '120ms' }}>
+            <h2 className="text-xl font-bold text-[#1B5E20]">Sustainability Impact Overview</h2>
+            <p className="mt-2 text-sm text-[#355f3a]">{summary}</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {kpis.map((kpi) => (
-                <div key={kpi.label} className="rounded-2xl border border-white/20 bg-white/10 p-4">
-                  <p className="text-xs text-[#D4E8C6]">{kpi.label}</p>
-                  <p className="mt-1 text-2xl font-black text-[#F1F8E9]">{kpi.value}</p>
+              {[
+                { label: 'Monthly Compostable Bags Produced', value: '18.4 Lakh' },
+                { label: 'Plastic Reduction (kg)', value: '42,800 kg' },
+                { label: 'Carbon Offset Equivalent', value: '126 tCO₂e' },
+                { label: 'Active Business Clients', value: '342' },
+              ].map((kpi) => (
+                <div key={kpi.label} className="rounded-2xl border border-[#dbe9d5] bg-white/70 p-4">
+                  <p className="text-xs text-[#527657]">{kpi.label}</p>
+                  <p className="mt-1 text-2xl font-black text-[#1B5E20]">{kpi.value}</p>
                 </div>
               ))}
             </div>
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              <label className="text-xs text-[#D4E8C6]">
+              <label className="text-xs text-[#436947]">
                 Monthly Compostable Bags Produced
                 <input
-                  className="mt-1 w-full rounded-lg border border-white/20 bg-[#1B5E20]/30 px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-[#d6e4d1] bg-white/80 px-3 py-2 text-sm"
                   type="number"
                   value={widgets.monthlyProduction}
                   onChange={(e) => setWidgets((p) => ({ ...p, monthlyProduction: Number(e.target.value || 0) }))}
                 />
               </label>
-              <label className="text-xs text-[#D4E8C6]">
+              <label className="text-xs text-[#436947]">
                 Plastic Reduction (kg)
                 <input
-                  className="mt-1 w-full rounded-lg border border-white/20 bg-[#1B5E20]/30 px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-[#d6e4d1] bg-white/80 px-3 py-2 text-sm"
                   type="number"
                   value={widgets.plasticReducedKg}
                   onChange={(e) => setWidgets((p) => ({ ...p, plasticReducedKg: Number(e.target.value || 0) }))}
@@ -171,26 +140,59 @@ const Home = () => {
             </div>
           </article>
 
-          <article className="glass-card fade-up rounded-3xl p-6" style={{ animationDelay: '340ms' }}>
-            <h2 className="text-2xl font-bold">Monthly Sales & Impact Growth</h2>
-            <div className="mt-4 rounded-2xl border border-white/20 bg-gradient-to-br from-[#2E7D32]/35 to-[#1B5E20]/30 p-3">
+          <article className="glass-card fade-up rounded-3xl p-6" style={{ animationDelay: '220ms' }}>
+            <h2 className="text-xl font-bold text-[#1B5E20]">Monthly Sales & Impact Growth</h2>
+            <div className="mt-4 rounded-2xl border border-[#dbe9d5] bg-gradient-to-br from-[#e8f2e2] to-[#f3f8ef] p-3">
               <svg viewBox="0 0 100 42" className="h-44 w-full">
                 <path d={buildPath(salesData)} className="chart-line chart-line-sales" />
                 <path d={buildPath(orderGrowth)} className="chart-line chart-line-orders" />
                 <path d={buildPath(esgImpact)} className="chart-line chart-line-esg" />
               </svg>
             </div>
-            <div className="mt-3 flex flex-wrap gap-3 text-xs text-[#E5F2DA]">
-              <span className="rounded-full border border-[#7BC67F]/60 px-3 py-1">Compostable Bags Sales</span>
-              <span className="rounded-full border border-[#C8A951]/60 px-3 py-1">Bulk Orders Growth</span>
-              <span className="rounded-full border border-[#B6E1A8]/60 px-3 py-1">ESG Impact Index</span>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs">
+              <span className="rounded-full border border-[#98c691] bg-white/75 px-3 py-1">Compostable Bags Sales</span>
+              <span className="rounded-full border border-[#d9c17a] bg-white/75 px-3 py-1">Bulk Orders Growth</span>
+              <span className="rounded-full border border-[#b8d4ad] bg-white/75 px-3 py-1">ESG Impact Index</span>
             </div>
           </article>
         </section>
 
-        <footer className="glass-card fade-up mt-8 rounded-3xl p-6 text-center" style={{ animationDelay: '420ms' }}>
-          <p className="text-lg font-bold">ECONIRVA Bio Solutions Pvt. Ltd.</p>
-          <p className="mt-1 text-sm text-[#DCEED0]">Engineered for Nature 🌿</p>
+        <section className="mt-6 grid gap-6 lg:grid-cols-2">
+          <article className="glass-card fade-up rounded-3xl p-6" style={{ animationDelay: '280ms' }}>
+            <h2 className="text-xl font-bold text-[#1B5E20]">Sustainability Highlights</h2>
+            <div className="mt-3 grid gap-2">
+              {sustainabilityHighlights.map((item) => (
+                <div key={item} className="card-hover rounded-xl border border-[#dbe9d5] bg-white/75 px-3 py-2 text-sm font-semibold text-[#28552f]">
+                  • {item}
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="glass-card fade-up rounded-3xl p-6" style={{ animationDelay: '340ms' }}>
+            <h2 className="text-xl font-bold text-[#1B5E20]">Uploaded Picture Preview</h2>
+            <p className="mt-2 text-sm text-[#456f4b]">Upload your image and it will be shown here in the page design.</p>
+            <input
+              type="file"
+              accept="image/*"
+              className="mt-3 w-full rounded-lg border border-[#dbe9d5] bg-white/80 px-3 py-2"
+              onChange={onImageUpload}
+            />
+            <div className="mt-4 overflow-hidden rounded-2xl border border-[#dbe9d5] bg-white/70 p-2">
+              {uploadedPreview ? (
+                <img src={uploadedPreview} alt="Uploaded preview" className="h-[420px] w-full rounded-xl object-contain" />
+              ) : (
+                <div className="flex h-[420px] items-center justify-center rounded-xl border border-dashed border-[#cdddc7] text-sm text-[#638367]">
+                  Your uploaded image preview will appear here
+                </div>
+              )}
+            </div>
+          </article>
+        </section>
+
+        <footer className="glass-card fade-up mt-6 rounded-3xl p-6 text-center" style={{ animationDelay: '420ms' }}>
+          <p className="text-lg font-bold text-[#1B5E20]">ECONIRVA Bio Solutions Pvt. Ltd.</p>
+          <p className="mt-1 text-sm text-[#486f4d]">Engineered for Nature 🌿</p>
           <p className="mt-2 text-sm">info@econirva.com · +91 70758 35854</p>
           <p className="text-sm">Hyderabad, Telangana, India</p>
         </footer>

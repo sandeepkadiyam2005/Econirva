@@ -1,25 +1,21 @@
 <svg width="1600" height="1200" viewBox="0 0 1600 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1600" height="1200" fill="url(#bg)"/>
-  <ellipse cx="220" cy="240" rx="280" ry="220" fill="url(#a)" fill-opacity="0.35"/>
-  <ellipse cx="1360" cy="260" rx="300" ry="240" fill="url(#b)" fill-opacity="0.33"/>
-  <ellipse cx="820" cy="1040" rx="420" ry="260" fill="url(#c)" fill-opacity="0.25"/>
+  <rect width="1600" height="1200" fill="#F3F8EF"/>
+  <rect width="1600" height="1200" fill="url(#wash)"/>
+  <ellipse cx="250" cy="230" rx="260" ry="200" fill="url(#a)"/>
+  <ellipse cx="1360" cy="260" rx="280" ry="220" fill="url(#b)"/>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="1200" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#144719"/>
-      <stop offset="0.55" stop-color="#1B5E20"/>
-      <stop offset="1" stop-color="#0E3412"/>
+    <linearGradient id="wash" x1="0" y1="0" x2="1600" y2="1200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FCF5"/>
+      <stop offset="0.55" stop-color="#ECF5E6"/>
+      <stop offset="1" stop-color="#F1F8E9"/>
     </linearGradient>
-    <radialGradient id="a" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(220 240) rotate(90) scale(220 280)">
-      <stop stop-color="#F1F8E9"/>
-      <stop offset="1" stop-color="#F1F8E9" stop-opacity="0"/>
+    <radialGradient id="a" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(250 230) rotate(90) scale(200 260)">
+      <stop stop-color="#2E7D32" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#2E7D32" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="b" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1360 260) rotate(90) scale(240 300)">
-      <stop stop-color="#C8A951"/>
+    <radialGradient id="b" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1360 260) rotate(90) scale(220 280)">
+      <stop stop-color="#C8A951" stop-opacity="0.18"/>
       <stop offset="1" stop-color="#C8A951" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="c" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(820 1040) rotate(90) scale(260 420)">
-      <stop stop-color="#8FC776"/>
-      <stop offset="1" stop-color="#8FC776" stop-opacity="0"/>
     </radialGradient>
   </defs>
 </svg>
