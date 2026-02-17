@@ -76,3 +76,19 @@ body {
     stroke-dashoffset: 0;
   }
 }
+
+
+.template-page-bg {
+  background-image: url('/images/bg-home.svg');
+  background-size: cover;
+  background-position: center;
+}
+
+.template-nav {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(7px);
+}
+
+.template-hero {
+  background: linear-gradient(120deg, rgba(255,255,255,0.82), rgba(241,248,233,0.72));
+}

@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 
-const perfectFor = ['Retail', 'Grocery', 'Food', 'Commercial'];
-const sustainabilityHighlights = [
-  '100% Compostable',
-  'IS/ISO 17088 Certified',
-  'BPA Free',
-  '90–120 Days Decomposition',
-  'Plant-based Raw Materials (PLA, Bio Polymers, NFMB)',
+const perfectFor = ['Restaurants', 'Sweet Shops', 'Pharmacies', 'Supermarkets', 'Boutiques'];
+const productRange = [
+  'Carry Bags – Standard & High-Strength Quality',
+  'D-Cut Bags – Standard & High-Strength Quality',
+  'Sizes: 8×10 to 24×30 inches + Custom Sizes',
+  'Pouches: 5×8 to 13×19 inches + Custom Sizes',
+  'Trash Bags (S–2XXL)',
 ];
 
 const deliveryOptions = [
@@ -36,8 +36,6 @@ const Home = () => {
   const [widgets, setWidgets] = useState({
     monthlyProduction: 1840000,
     plasticReducedKg: 42800,
-    carbonOffset: 126,
-    activeClients: 342,
   });
   const [uploadedPreview, setUploadedPreview] = useState(null);
   const [selectedDelivery, setSelectedDelivery] = useState(deliveryOptions[0]);
@@ -63,57 +61,50 @@ const Home = () => {
   };
 
   return (
-    <main
-      className="min-h-screen text-[#1f3a24]"
-      style={{
-        backgroundImage: "url('/images/bg-home.svg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    >
+    <main className="min-h-screen text-[#1f3a24] template-page-bg">
       <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
-        <section className="glass-card fade-up rounded-[32px] p-6 lg:p-8">
-          <div className="mx-auto max-w-4xl text-center">
-            <span className="inline-flex items-center rounded-full bg-[#2E7D32] px-5 py-2 text-xs font-bold tracking-[0.22em] text-[#F1F8E9]">
-              INTRODUCING
-            </span>
-            <img src="/images/econirva-logo.svg" alt="Econirva" className="mx-auto mt-6 h-28 w-28 rounded-full bg-white/70 p-2" />
+        <div className="rounded-t-2xl bg-[#2E7D32] px-4 py-2 text-center text-xs font-semibold tracking-[0.18em] text-[#F1F8E9]">
+          ENGINEERED FOR NATURE
+        </div>
 
-            <h1 className="mt-6 text-3xl font-black leading-tight text-[#1B5E20] lg:text-5xl">🌿 Go Green with ECONIRVA Bio Solutions!</h1>
-            <p className="mt-3 text-lg font-semibold text-[#2E7D32]">
-              ♻ Manufacturer of 100% Biodegradable & Compostable Carry Bags, Pouches & Trash Bags
-            </p>
-
-            <p className="mt-4 text-base text-[#234a29]">
-              A Step Towards a <span className="font-bold text-[#2E7D32]">Greener</span> & Cleaner Future ♻
-            </p>
-            <p className="mt-3 text-sm text-[#3b6542]">
-              We specialize in manufacturing and supplying high-quality biodegradable and compostable bags that serve
-              today’s needs without harming tomorrow’s world.
-            </p>
+        <nav className="template-nav rounded-b-2xl border-x border-b border-[#dbe9d5] px-5 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-6 text-sm font-semibold text-[#2d5633]">
+              <a href="#">Home</a>
+              <a href="#">About Us</a>
+              <a href="#">Products</a>
+              <a href="#">Contact</a>
+            </div>
+            <button className="rounded-lg bg-[#2E7D32] px-4 py-2 text-sm font-semibold text-[#F1F8E9]">Where to Use</button>
           </div>
+        </nav>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              '100% Biodegradable & Compostable',
-              'Eco-friendly & Non-Toxic',
-              'Bulk & Business Ready',
-              'Designed for Greener Future',
-            ].map((item) => (
-              <div key={item} className="card-hover rounded-2xl border border-[#dbe9d5] bg-white/75 px-4 py-3 text-center text-sm font-semibold text-[#24512d]">
-                {item}
+        <section className="glass-card fade-up rounded-[26px] border border-[#d8e6d1] p-6 lg:p-8 template-hero">
+          <div className="grid items-center gap-6 lg:grid-cols-2">
+            <div>
+              <p className="text-xs font-bold tracking-[0.25em] text-[#2E7D32]">ENGINEERED FOR NATURE</p>
+              <h1 className="mt-3 text-4xl font-black leading-tight text-[#1B5E20] lg:text-6xl">Go Green with ECONIRVA Bio Solutions!</h1>
+              <p className="mt-4 text-2xl font-semibold text-[#2E7D32]">Manufacturer of 100% Biodegradable & Compostable Carry Bags, Pouches & Trash Bags</p>
+
+              <p className="mt-5 text-lg font-bold text-[#274f2d]">Ideal for:</p>
+              <p className="mt-2 text-lg text-[#335c39]">🍽 Restaurants | 🍬 Sweet Shops | 💊 Pharmacies | 🛒 Supermarkets | 👗 Boutiques</p>
+
+              <p className="mt-5 text-xl font-bold text-[#1B5E20]">Our Product Range:</p>
+              <ul className="mt-2 space-y-1 text-lg text-[#335c39]">
+                {productRange.map((item) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-3xl border border-[#dbe9d5] bg-white/60 p-4">
+              <img src="/products/grocery-bags.svg" alt="Compostable bags" className="h-72 w-full rounded-2xl object-cover" />
+              <div className="mt-3 grid grid-cols-2 gap-2 text-center text-xs font-semibold">
+                <div className="rounded-xl border border-[#dbe9d5] bg-white/80 p-2">100% Biodegradable</div>
+                <div className="rounded-xl border border-[#dbe9d5] bg-white/80 p-2">Eco-friendly & Non-Toxic</div>
+                <div className="rounded-xl border border-[#dbe9d5] bg-white/80 p-2">Bulk & Business Ready</div>
+                <div className="rounded-xl border border-[#dbe9d5] bg-white/80 p-2">Greener Future</div>
               </div>
-            ))}
-          </div>
-
-          <div className="mt-6 rounded-2xl border border-[#dbe9d5] bg-white/65 p-4">
-            <p className="text-center text-xs font-bold tracking-[0.35em] text-[#2E7D32]">PERFECT FOR</p>
-            <div className="mt-3 flex flex-wrap justify-center gap-2">
-              {perfectFor.map((item) => (
-                <span key={item} className="rounded-full bg-[#2E7D32] px-4 py-2 text-sm font-semibold text-[#F1F8E9]">
-                  {item}
-                </span>
-              ))}
             </div>
           </div>
         </section>
@@ -176,17 +167,6 @@ const Home = () => {
         </section>
 
         <section className="mt-6 grid gap-6 lg:grid-cols-2">
-          <article className="glass-card fade-up rounded-3xl p-6" style={{ animationDelay: '280ms' }}>
-            <h2 className="text-xl font-bold text-[#1B5E20]">Sustainability Highlights</h2>
-            <div className="mt-3 grid gap-2">
-              {sustainabilityHighlights.map((item) => (
-                <div key={item} className="card-hover rounded-xl border border-[#dbe9d5] bg-white/75 px-3 py-2 text-sm font-semibold text-[#28552f]">
-                  • {item}
-                </div>
-              ))}
-            </div>
-          </article>
-
           <article className="glass-card fade-up rounded-3xl p-6" style={{ animationDelay: '340ms' }}>
             <h2 className="text-xl font-bold text-[#1B5E20]">Bulk Order Intake + Artwork Upload</h2>
             <p className="mt-2 text-sm text-[#456f4b]">Upload your image and choose preferred delivery services for your bulk order.</p>
@@ -236,6 +216,23 @@ const Home = () => {
                   Your uploaded image preview will appear here
                 </div>
               )}
+            </div>
+          </article>
+
+          <article className="glass-card fade-up rounded-3xl p-6" style={{ animationDelay: '280ms' }}>
+            <h2 className="text-xl font-bold text-[#1B5E20]">Sustainability Highlights</h2>
+            <div className="mt-3 grid gap-2">
+              {[
+                '100% Compostable',
+                'IS/ISO 17088 Certified',
+                'BPA Free',
+                '90–120 Days Decomposition',
+                'Plant-based Raw Materials (PLA, Bio Polymers, NFMB)',
+              ].map((item) => (
+                <div key={item} className="card-hover rounded-xl border border-[#dbe9d5] bg-white/75 px-3 py-2 text-sm font-semibold text-[#28552f]">
+                  • {item}
+                </div>
+              ))}
             </div>
           </article>
         </section>
