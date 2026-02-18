@@ -1,0 +1,368 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  TENANT_ADMIN
+  SALES
+  SALES_MANAGER
+  PRODUCTION
+  OPERATIONS_MANAGER
+  FINANCE
+  FINANCE_MANAGER
+  ORDER_HANDLER
+  ANALYST
+  STAFF
+  VIEWER
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum SubscriptionPlan {
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  VOID
+}
+
+enum SsoProviderType {
+  GOOGLE
+  MICROSOFT
+}
+
+enum ReportPeriod {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+}
+
+model Tenant {
+  id                 String                  @id @default(cuid())
+  name               String
+  slug               String                  @unique
+  subdomain          String                  @unique
+  primaryDomain      String?
+  brandLogoUrl       String?
+  brandPrimaryColor  String?
+  defaultLanguage    String                  @default("en")
+  defaultCurrency    String                  @default("USD")
+  defaultCountryCode String                  @default("US")
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  users              User[]
+  products           Product[]
+  orders             Order[]
+  customers          Customer[]
+  features           TenantFeature[]
+  subscriptions      TenantSubscription[]
+  usageMetrics       UsageMetric[]
+  invoices           BillingInvoice[]
+  materialBatches    MaterialBatch[]
+  certificates       SustainabilityCertificate[]
+  carbonMetrics      CarbonMetric[]
+  esgReports         EsgReport[]
+  investorMetrics    InvestorMetric[]
+  aiPredictions      AiPrediction[]
+  auditLogs          AuditLog[]
+  ssoProviders       TenantSsoProvider[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  tenantId     String
+  name         String
+  email        String
+  password     String
+  role         UserRole @default(STAFF)
+  locale       String   @default("en")
+  createdAt    DateTime @default(now())
+  lastLoginAt  DateTime?
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, email])
+  @@index([tenantId, role])
+}
+
+model Product {
+  id            String      @id @default(cuid())
+  tenantId      String
+  name          String
+  description   String?
+  price         Decimal     @db.Decimal(12, 2)
+  currency      String      @default("USD")
+  stock         Int         @default(0)
+  imageUrl      String?
+  regionCode    String?
+  createdAt     DateTime    @default(now())
+  tenant        Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orderItems    OrderItem[]
+
+  @@index([tenantId, createdAt])
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  tenantId      String
+  customerId    String?
+  customerName  String
+  customerEmail String
+  status        OrderStatus @default(PENDING)
+  totalPrice    Decimal     @db.Decimal(12, 2)
+  currency      String      @default("USD")
+  taxAmount     Decimal?    @db.Decimal(12, 2)
+  logoUrl       String?
+  createdAt     DateTime    @default(now())
+  tenant        Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer      Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  orderItems    OrderItem[]
+
+  @@index([tenantId, status, createdAt])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Customer {
+  id         String   @id @default(cuid())
+  tenantId    String
+  name       String
+  email      String
+  address    String?
+  phone      String?
+  country    String?
+  createdAt  DateTime @default(now())
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orders     Order[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId, name])
+}
+
+model TenantSubscription {
+  id              String             @id @default(cuid())
+  tenantId         String
+  plan             SubscriptionPlan
+  status           SubscriptionStatus @default(TRIAL)
+  billingCycle     BillingCycle      @default(MONTHLY)
+  startedAt        DateTime          @default(now())
+  renewalAt        DateTime?
+  maxUsers         Int               @default(25)
+  maxOrdersPerMonth Int              @default(2000)
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+}
+
+model TenantFeature {
+  id         String   @id @default(cuid())
+  tenantId   String
+  key        String
+  enabled    Boolean  @default(false)
+  quota      Int?
+  used       Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, key])
+}
+
+model UsageMetric {
+  id          String   @id @default(cuid())
+  tenantId    String
+  metricKey   String
+  metricValue Int
+  windowStart DateTime
+  windowEnd   DateTime
+  createdAt   DateTime @default(now())
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, metricKey, windowStart])
+}
+
+model BillingInvoice {
+  id            String        @id @default(cuid())
+  tenantId      String
+  amount        Decimal       @db.Decimal(12, 2)
+  currency      String
+  status        InvoiceStatus @default(DRAFT)
+  issuedAt      DateTime?
+  dueAt         DateTime?
+  paidAt        DateTime?
+  externalRef   String?
+  createdAt     DateTime      @default(now())
+  tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+}
+
+model RegionPricingRule {
+  id             String   @id @default(cuid())
+  regionCode     String
+  currency       String
+  multiplier     Decimal  @db.Decimal(8, 4)
+  createdAt      DateTime @default(now())
+
+  @@unique([regionCode, currency])
+}
+
+model TaxRule {
+  id             String   @id @default(cuid())
+  countryCode    String
+  regionCode     String?
+  taxType        String
+  rate           Decimal  @db.Decimal(8, 4)
+  createdAt      DateTime @default(now())
+
+  @@index([countryCode, regionCode])
+}
+
+model MaterialBatch {
+  id                 String   @id @default(cuid())
+  tenantId           String
+  batchCode          String
+  originCountry      String
+  supplierName       String
+  sustainabilityData Json?
+  createdAt          DateTime @default(now())
+  tenant             Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, batchCode])
+}
+
+model SustainabilityCertificate {
+  id               String   @id @default(cuid())
+  tenantId         String
+  certificateNo    String
+  standard         String
+  issuedBy         String
+  proofHash        String
+  metadata         Json?
+  issuedAt         DateTime @default(now())
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, certificateNo])
+}
+
+model CarbonMetric {
+  id                 String   @id @default(cuid())
+  tenantId           String
+  periodYear         Int
+  periodMonth        Int
+  co2SavingsKg       Decimal  @db.Decimal(14, 3)
+  plasticReductionKg Decimal  @db.Decimal(14, 3)
+  createdAt          DateTime @default(now())
+  tenant             Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, periodYear, periodMonth])
+}
+
+model EsgReport {
+  id          String       @id @default(cuid())
+  tenantId    String
+  period      ReportPeriod
+  periodLabel String
+  reportUrl   String?
+  summary     Json
+  createdAt   DateTime     @default(now())
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, period, createdAt])
+}
+
+model InvestorMetric {
+  id               String   @id @default(cuid())
+  tenantId         String
+  monthLabel       String
+  revenue          Decimal  @db.Decimal(14, 2)
+  burnRate         Decimal? @db.Decimal(14, 2)
+  activeUsers      Int
+  growthRatePct    Decimal? @db.Decimal(8, 4)
+  createdAt        DateTime @default(now())
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, monthLabel])
+}
+
+model AiPrediction {
+  id               String   @id @default(cuid())
+  tenantId         String
+  predictionType   String
+  context          Json
+  prediction       Json
+  confidence       Decimal? @db.Decimal(5, 4)
+  createdAt        DateTime @default(now())
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, predictionType, createdAt])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  tenantId    String
+  userId      String?
+  action      String
+  resource    String
+  metadata    Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+}
+
+model TenantSsoProvider {
+  id             String          @id @default(cuid())
+  tenantId       String
+  provider       SsoProviderType
+  clientId       String
+  clientSecret   String
+  issuerUrl      String?
+  enabled        Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, provider])
+}

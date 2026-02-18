@@ -13,20 +13,82 @@ html {
 body {
   font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   margin: 0;
-  background: #f7fbf8;
+  background: #f3f7ef;
+  color: #1f3a24;
 }
 
-.section-padding {
-  padding: 4rem 1.25rem;
+.glass-card {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 14px 35px rgba(20, 58, 26, 0.12);
 }
 
-.container-width {
-  margin: 0 auto;
-  width: 100%;
-  max-width: 72rem;
+.fade-up {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: fadeUp 0.7s ease forwards;
 }
 
-.gradient-hero {
-  background: radial-gradient(circle at top left, rgba(165, 230, 185, 0.35), transparent 60%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(233, 247, 239, 0.9));
+.card-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 28px rgba(20, 58, 26, 0.18);
+}
+
+.chart-line {
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  animation: drawLine 1.5s ease forwards;
+}
+
+.chart-line-sales {
+  stroke: #2e7d32;
+  animation-delay: 0.1s;
+}
+
+.chart-line-orders {
+  stroke: #c8a951;
+  animation-delay: 0.3s;
+}
+
+.chart-line-esg {
+  stroke: #77a96f;
+  animation-delay: 0.5s;
+}
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+
+.template-page-bg {
+  background-image: url('/images/bg-home.svg');
+  background-size: cover;
+  background-position: center;
+}
+
+.template-nav {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(7px);
+}
+
+.template-hero {
+  background: linear-gradient(120deg, rgba(255,255,255,0.82), rgba(241,248,233,0.72));
 }

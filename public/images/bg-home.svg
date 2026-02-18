@@ -1,0 +1,18 @@
+<svg width="1600" height="1200" viewBox="0 0 1600 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="1200" fill="#F7FBF3"/>
+  <rect width="1600" height="1200" fill="url(#wash)"/>
+  <g opacity="0.22" fill="#B9D9AE">
+    <path d="M1240 155c45 0 73 34 74 73-43 4-77-26-74-73Z"/>
+    <path d="M1170 210c37 2 60 29 58 62-38 0-63-24-58-62Z"/>
+    <path d="M1314 238c41-2 69 22 71 58-40 5-70-18-71-58Z"/>
+    <path d="M302 260c42 0 69 30 69 64-40 3-72-22-69-64Z"/>
+    <path d="M240 320c36 2 60 27 58 58-37 0-62-21-58-58Z"/>
+  </g>
+  <defs>
+    <linearGradient id="wash" x1="0" y1="0" x2="1600" y2="1200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FBFDF9"/>
+      <stop offset="0.5" stop-color="#F1F8E9"/>
+      <stop offset="1" stop-color="#EAF4E2"/>
+    </linearGradient>
+  </defs>
+</svg>
